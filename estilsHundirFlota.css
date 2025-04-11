@@ -1,0 +1,89 @@
+
+h1, h2{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: whitesmoke;
+}
+
+
+body{
+    background-color: rgb(22, 39, 56);
+    padding: 20px;
+}
+
+main {
+    display: flex;
+    justify-content:space-around;
+    gap:10px;
+
+    width: 100%;
+}
+
+.tauler {
+    display: grid;
+    /* grid-template-columns: repeat(4, 50px); */
+
+    justify-content: left;
+    /*gap: 5px;*/
+}
+
+.casella {
+    width: 50px;
+    height: 50px;
+
+
+    border: 1px solid black;
+    text-align: center;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.aigua {
+    background-color: rgb(105, 200, 255);
+}
+
+.vaixell {
+    background-color: rgb(177, 177, 177);
+}
+
+.rendVaixell {
+    width: auto;
+    height: auto;
+    
+    background-color: rgba(177, 177, 177, 0.559);
+    box-shadow: -10px -10px 2px 1px rgba(4, 25, 128, 0.2);
+
+    position: fixed;
+
+    display: flex;
+    flex-direction:row;
+}
+
+
+/*Estils vaixells*/
+
+.P{
+    background-color: rgb(144, 191, 245);
+
+}
+
+.A {
+    background-color: rgb(245, 144, 144);
+}
+
+.C {
+    background-color: rgb(184, 245, 144);
+}
+
+.D {
+    background-color: rgb(238, 245, 144);
+}
+
+.S {
+    background-color: rgb(196, 144, 245);
+}
+
+.tauler {
+    margin-bottom: 10px;
+}
