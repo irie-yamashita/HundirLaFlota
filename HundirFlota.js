@@ -2,12 +2,6 @@
 let vaixellUsu = "";
 let direccioUsu = 'R'; //per defecte poso que la direcció sigui horitzontal (right)
 
-/**
- * posicionarVaixells()
- * 
- * - Si la direcció és Up o Down -> 'x' es modifica, 'y' fixa
- * - Si la direcció es Left, Right -> 'x' fixa, 'y' es modifica
- */
 
 
 import { Tauler } from "./model/Tauler.js";
@@ -22,6 +16,7 @@ const vaixellsJSON = `[
 ]`;
 
 let vaixellsJoc = cargarJson(vaixellsJSON);
+
 
 
 //FUNCIONS
@@ -257,16 +252,11 @@ function onClickCasella(event) {
             //drag&drop
             eliminarRendVaixell();
 
-            
+            //quan col·loco tots els vaixells -> dono opció de començar a jugar
             if(tauler2.vaixells.length == vaixellsJoc.length) {
-
-                let iniciJoc = confirm("Has col·locat tots els vaixells. Vols començar a jugar?");
-
-                if(iniciJoc) {
-                    eliminarEvents();
-                    let reset = document.getElementById("reset_btn");
-                    reset.style.display = "none";
-                }
+                crearBoto("jugar_btn", "botonsDireccions", "JUGAR");
+                let jugar_btn = document.getElementById("jugar_btn");
+                jugar_btn.addEventListener("click", iniciarJoc);
 
             }
 
@@ -285,6 +275,27 @@ function eliminarEvents() {
         casella.removeEventListener("click", onClickCasella);
     })
 
+
+}
+
+function iniciarJoc() {
+    //amago el botó de jugar, reset i vaixells
+    let botoJugar = document.getElementById("jugar_btn");
+    botoJugar.style.display = "none";
+
+    let botoReset = document.getElementById("reset_btn");
+    botoReset.style.display = "none";
+
+    let containerBotons = document.getElementById("botons_container"); 
+    let botonsVaixells = containerBotons.getElementsByTagName("button");
+
+    for(let boto of botonsVaixells) {
+        boto.style.display = "none"
+    }
+    
+
+    //elimino els events
+    eliminarEvents();
 
 }
 
@@ -322,3 +333,17 @@ function init() {
     actualitzarTauler(tauler2);
 
 } init();
+
+
+
+
+
+//UTILS
+function crearBoto(id, pare, text = "") {
+    let contenidor = document.getElementById(pare);
+    let boto = document.createElement("button");
+    boto.id = id;
+    boto.textContent = text;
+
+    contenidor.appendChild(boto);
+}
