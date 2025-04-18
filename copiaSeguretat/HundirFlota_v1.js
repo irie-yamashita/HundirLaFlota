@@ -68,17 +68,14 @@ function actualitzarTauler(tauler) { //TODO: esborrar?
 
 }
 
-function actualitzaCasella(id, tauler) {
+function actualitzaCasella(id, tauler) { //TODO: array associativa
 
     let casella = document.getElementById(id);
     let coord = extreureCoordenades(id);
 
-    let aigua =  tauler.caselles[coord.x][coord.y].aigua;
+    let aigua =  tauler.caselles[coord[0]][coord[1]].aigua;
     if(aigua) {
         console.log("Hi ha aigua");
-        
-        casella.setAttribute("class", "casella aigua");
-        casella.textContent=""; //TODO: esborrar, ho faré amb imatge i CSS
     } else {
         console.log("hi ha un vaixell");
 
@@ -86,12 +83,12 @@ function actualitzaCasella(id, tauler) {
         casella.classList.remove("aigua");
         casella.classList.add("vaixell");
 
-        let nom = tauler.caselles[coord.x][coord.y].nomVaixell;
+        let nom = tauler.caselles[coord[0]][coord[1]].nomVaixell;
         casella.innerHTML = nom;
         casella.classList.add(nom[0]);
 
 
-        let tocat =  tauler.caselles[coord.x][coord.y].tocat;
+        let tocat =  tauler.caselles[coord[0]][coord[1]].tocat;
 
         if(tocat) {
             console.log("vaixell TOCAT");
@@ -256,8 +253,8 @@ function onClickCasella(event) {
         let idCasella = event.target.id;
         let coord = extreureCoordenades(idCasella);
 
-        let x = parseInt(coord.x);
-        let y = parseInt(coord.y);
+        let x = parseInt(coord[0]);
+        let y = parseInt(coord[1]);
 
         //console.log(x, y);
 
@@ -302,6 +299,7 @@ function eliminarEvents() {
     caselles.forEach(function (casella) {
         casella.removeEventListener("click", onClickCasella);
     })
+
 
 }
 
@@ -366,10 +364,10 @@ function init() {
 
 
 //UTILS
-function extreureCoordenades(id) {
+function extreureCoordenades(id) { //TODO: array associativa/object
     let elements = id.split("-"); //j2-4-9   (nom-x-y)
 
-    return {"x": elements[1], "y": elements[2]};
+    return [elements[1], elements[2]];
 }
 
 function crearBoto(id, pare, text = "") {
