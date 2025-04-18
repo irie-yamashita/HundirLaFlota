@@ -36,6 +36,7 @@ main {
 
 
     border: 1px solid rgb(181, 223, 240);
+    background-color: #4248a5;
     text-align: center;
 
     display: flex;

@@ -4,7 +4,11 @@ import { Vaixell } from "./model/Vaixell.js";
 //Declaració variables globals
 let vaixellUsu = "";
 let direccioUsu = 'R'; //per defecte poso que la direcció sigui horitzontal (right)
-let tauler2;
+let casellaUsu;
+let torn = true;
+
+let taulerRival;
+let taulerJugador;
 
 
 const vaixellsJSON = `[
@@ -40,15 +44,15 @@ function crearTauler(tauler, id, interactuable = false) {
             //creo una casella i per defecte li poso la classe aigua
             let columna = document.createElement("div");
             columna.setAttribute("id", tauler.jugador + `-${f}-${c}`);
-            columna.classList.add("casella", "aigua");
+            columna.classList.add("casella");
 
             //columna.innerHTML = `[${f}, ${c}]`
 
 
             if (interactuable) {
                 //listener per col·locar els vaixells del jugador
-                columna.addEventListener("click", onClickCasella);
-
+                columna.addEventListener("click", colocacioVaixellHandler);
+                columna.classList.add("aigua");
             }
 
             divTauler.appendChild(columna);
@@ -184,8 +188,8 @@ function onClickDireccio(event) {
 */
 function onReiniciarColocacio() {
     //Reinicio tauler (objecte)
-    tauler2.reiniciar();
-    actualitzarTauler(tauler2);
+    taulerJugador.reiniciar();
+    actualitzarTauler(taulerJugador);
 
     //Activo tots els botons
     let contenidorV = document.getElementById("botonsVaixells");
@@ -193,7 +197,7 @@ function onReiniciarColocacio() {
     for( let boto of botons) {
         boto.disabled = false;
     }
-    resetTauler(tauler2);
+    resetTauler(taulerJugador);
 }
 
 
@@ -259,7 +263,7 @@ function eliminarRendVaixell() {
 /*Funció que controla la col·locasció de vaixells en les caselles del taulell. 
     - És cridada quan fas 'click' a una casella del jugador durant la col·locació de vaixells inicials
 */
-function onClickCasella(event) {
+function colocacioVaixellHandler(event) {
     if (vaixellUsu != "") {
         //extrec les coordenades -> x0y4 (id de la casella)
         let idCasella = event.target.id;
@@ -271,7 +275,7 @@ function onClickCasella(event) {
 
         //Col·loco els vaixells i actualitzo la part visual
         let vaixell = new Vaixell (vaixellUsu.name[0], vaixellUsu.name, vaixellUsu.size);
-        let colocat = tauler2.colocarVaixell(vaixell, x, y, direccioUsu);
+        let colocat = taulerJugador.colocarVaixell(vaixell, x, y, direccioUsu);
 
         //comprovo si el vaixell s'ha col·locat correctament
         if (!colocat) {
@@ -283,17 +287,17 @@ function onClickCasella(event) {
             vaixellUsu = "";
 
             //afegeixo el vaixell a la llista del taulell del jugador
-            tauler2.afegirVaixell(vaixell);//!!
-            actualitzarTauler(tauler2);
+            taulerJugador.afegirVaixell(vaixell);//!!
+            actualitzarTauler(taulerJugador);
 
             //drag&drop
             eliminarRendVaixell();
 
             //si col·loco tots els vaixells -> dono opció de començar a jugar
-            if(tauler2.vaixells.length == vaixellsJoc.length) {
+            if(taulerJugador.vaixells.length == vaixellsJoc.length) {
                 let jugar_btn = document.getElementById("jugar_btn");
                 jugar_btn.style.display = "inline";
-                //jugar_btn.addEventListener("click", iniciarJoc);
+                jugar_btn.addEventListener("click", iniciarJoc);
 
             }
 
@@ -323,7 +327,7 @@ function iniciarJoc() {
     }
     
 
-    //elimino els events
+    //elimino els events de col·locació de vaixells i activo els de joc
     eliminarEvents();
 
 }
@@ -333,11 +337,70 @@ function eliminarEvents() {
     let caselles = document.querySelectorAll('#j2 .casella');
 
     caselles.forEach(function (casella) {
-        casella.removeEventListener("click", onClickCasella);
+        casella.removeEventListener("click", colocacioVaixellHandler);
     })
 
 }
 
+
+
+function activarEventJoc() {
+    let casellesRivals = document.querySelectorAll("#j1 .casella");
+
+    for (let casella of casellesRivals) {
+        casella.addEventListener('click', seleccionaCasella);
+    }
+
+
+    let botoAtacar = document.getElementById("atacar_btn");
+    botoAtacar.addEventListener("click", atacarHandler);
+
+}
+
+function atacarHandler() {
+
+    if(torn) {
+
+        //comprovo que usuari hagi seleccionat una casella
+        if(casellaUsu) {
+            let coord = extreureCoordenades(casellaUsu);
+
+            //comprovo què és el que seleciono
+            let aigua = taulerRival.caselles[coord.x][coord.y].aigua;
+
+            if(aigua) { 
+                //torn = false;
+            } else { //és un vaixell
+                taulerRival.caselles[coord.x][coord.y].tocat = true; //el marco com a tocat
+                alert("TOCAAAAT");
+                //TODO: jugada = true
+    
+                console.log(taulerRival);
+            }
+    
+            //mostro casella (visual)
+            actualitzaCasella(casellaUsu, taulerRival);
+            casellaUsu="";
+            
+        } else {
+            alert("Selecciona una casella per atacar!");
+        }
+
+
+    } else {
+        alert("NO és el teu torn, espera.");
+    }
+
+}
+
+function seleccionaCasella(event) {
+    //TODO: if és el meu torn
+
+    casellaUsu =  event.target.id;
+
+
+    //TODO: borrar listener
+}
 
 
 
@@ -348,32 +411,33 @@ function init() {
     jugar_btn.style.display = "none";
 
     //TAULER 01: automàtic
-    const tauler1 = new Tauler("j1", [10, 10]);
+    taulerRival = new Tauler("j1", [10, 10]);
 
     //genero un vaixell de cada tipus
     for (let dades of vaixellsJoc) {
 
         let id = dades.name[0]; //l'id és la primera lletra
         let vaixell = new Vaixell(id, dades.name, dades.size);
-        tauler1.afegirVaixell(vaixell);
+        taulerRival.afegirVaixell(vaixell);
     }
 
     //crido mètode per posicionar els vaixells
-    tauler1.posicionarVaixells();
+    taulerRival.posicionarVaixells();
 
     //mostro el tauler
-    crearTauler(tauler1, "tauler1");
-    actualitzarTauler(tauler1);
+    crearTauler(taulerRival, "tauler1", false);
 
 
     //TAULER 02: jugador
     //creo el taulell i botons
-    tauler2 = new Tauler("j2", [10, 10]);
+    taulerJugador = new Tauler("j2", [10, 10]);
     generarBotons();
 
     //mostro el tauler
-    crearTauler(tauler2, "tauler2", true);
-    actualitzarTauler(tauler2);
+    crearTauler(taulerJugador, "tauler2", true);
+    actualitzarTauler(taulerJugador);
+
+    activarEventJoc();
 
 } init();
 
