@@ -365,17 +365,17 @@ function atacarHandler() {
         if(casellaUsu) {
             let coord = extreureCoordenades(casellaUsu);
 
-            //comprovo què és el que seleciono
-            let aigua = taulerRival.caselles[coord.x][coord.y].aigua;
+            //ataco
+            let tocat = taulerRival.atacar(coord.x, coord.y);
 
-            if(aigua) { 
-                //torn = false;
-            } else { //és un vaixell
-                taulerRival.caselles[coord.x][coord.y].tocat = true; //el marco com a tocat
+            if(tocat) { 
                 alert("TOCAAAAT");
                 //TODO: jugada = true
     
                 console.log(taulerRival);
+
+            } else {
+                //torn = false;
             }
     
             //mostro casella (visual)
@@ -394,10 +394,7 @@ function atacarHandler() {
 }
 
 function seleccionaCasella(event) {
-    //TODO: if és el meu torn
-
     casellaUsu =  event.target.id;
-
 
     //TODO: borrar listener
 }
@@ -426,6 +423,7 @@ function init() {
 
     //mostro el tauler
     crearTauler(taulerRival, "tauler1", false);
+    actualitzarTauler(taulerRival); //TODO: esborrar
 
 
     //TAULER 02: jugador
@@ -438,6 +436,8 @@ function init() {
     actualitzarTauler(taulerJugador);
 
     activarEventJoc();
+
+    console.log(taulerRival.vaixells);
 
 } init();
 

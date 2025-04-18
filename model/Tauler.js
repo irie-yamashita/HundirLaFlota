@@ -26,9 +26,42 @@ export class Tauler {
 
     }
 
-    afegirCaselles() {
-        
+    atacar(x, y) {
+        if(this.#caselles[x][y].aigua == true) {
+            return false //no he tocat
+        }
+
+        else {
+            this.#caselles[x][y].tocat = true;
+            let idVaixell = this.#caselles[x][y].nomVaixell;
+            
+            //comprovo si està ja enfonsat
+            let vaixellTriat = this.#vaixells.find((vaixell) => vaixell.id == idVaixell);
+            vaixellTriat.enfonsat = this.#vaixellEnfonsat(vaixellTriat);
+
+            return true //he tocat
+        }
+
     }
+
+    #vaixellEnfonsat (vaixell) {
+        let enfonsat = true;
+
+        //comprovo que el vaixell no estigui enfonsat
+        for(let coordenada of vaixell.coordenades) { //TODO: canviar-ho a WHILE
+
+            if(this.#caselles[coordenada[0]][coordenada[1]].tocat == false) {
+                enfonsat = false;
+            }
+        }
+
+        if(enfonsat) { //TODO: Esborrar
+            alert("TOCAT i ENFONSAT");
+        }
+
+        return enfonsat;
+    }
+    
 
 
     afegirVaixell(vaixell) {
@@ -124,6 +157,8 @@ export class Tauler {
                 } 
                 this.#caselles[nX][nY].aigua = false;
                 this.#caselles[nX][nY].nomVaixell = vaixell.id;      
+
+                vaixell.afegirCoordenada([nX, nY]);
     
             }
             return true //vaixell colocat
