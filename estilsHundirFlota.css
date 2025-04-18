@@ -44,6 +44,10 @@ main {
     align-items: center;
 }
 
+.seleccionat {
+    background-color: aquamarine;
+}
+
 .aigua {
     background-color: rgb(105, 200, 255);
     background-image: url("mar.png");

@@ -371,8 +371,6 @@ function atacarHandler() {
             if(tocat) { 
                 alert("TOCAAAAT");
                 //TODO: jugada = true
-    
-                console.log(taulerRival);
 
             } else {
                 //torn = false;
@@ -394,8 +392,20 @@ function atacarHandler() {
 }
 
 function seleccionaCasella(event) {
+    let casellaAnterior = document.getElementById(casellaUsu);
+    if(casellaAnterior) {
+        casellaAnterior.classList.remove("seleccionat");
+    }
+
+
+    //guardo l'id de la casella seleccionada
     casellaUsu =  event.target.id;
 
+    //li canvio l'estil per marcar que està selecionada
+    let casellaSeleccionada = document.getElementById(casellaUsu);
+    casellaSeleccionada.classList.add("seleccionat");
+
+    
     //TODO: borrar listener
 }
 
@@ -423,7 +433,7 @@ function init() {
 
     //mostro el tauler
     crearTauler(taulerRival, "tauler1", false);
-    actualitzarTauler(taulerRival); //TODO: esborrar
+    //actualitzarTauler(taulerRival); //TODO: esborrar
 
 
     //TAULER 02: jugador
