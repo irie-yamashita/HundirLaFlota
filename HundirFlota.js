@@ -1,11 +1,11 @@
-
-let vaixellUsu = "";
-let direccioUsu = 'R'; //per defecte poso que la direcció sigui horitzontal (right)
-
-
-
 import { Tauler } from "./model/Tauler.js";
 import { Vaixell } from "./model/Vaixell.js";
+
+//Declaració variables globals
+let vaixellUsu = "";
+let direccioUsu = 'R'; //per defecte poso que la direcció sigui horitzontal (right)
+let tauler2;
+
 
 const vaixellsJSON = `[
 { "name": "Portaaviones", "size": 5 },
@@ -68,19 +68,17 @@ function actualitzarTauler(tauler) { //TODO: esborrar?
 
 }
 
+/*Funció que consulta l'objecte tauler i actualitza la casella amb l'id passat per paràmetre.*/
 function actualitzaCasella(id, tauler) {
 
     let casella = document.getElementById(id);
     let coord = extreureCoordenades(id);
 
     let aigua =  tauler.caselles[coord.x][coord.y].aigua;
-    if(aigua) {
-        console.log("Hi ha aigua");
-        
+    if(aigua) {        
         casella.setAttribute("class", "casella aigua");
         casella.textContent=""; //TODO: esborrar, ho faré amb imatge i CSS
     } else {
-        console.log("hi ha un vaixell");
 
         //trec la classe aigua, li afegeixo la classe vaixell general i la concreta
         casella.classList.remove("aigua");
@@ -104,7 +102,7 @@ function actualitzaCasella(id, tauler) {
 
 
 
-/*Funció fa un reset del tauler*/
+/*Funció que fa un reset del tauler (a nivell visual).*/
 function resetTauler(tauler) {
     for (let f = 0; f < tauler.tamany[0]; f++) {
         for (let c = 0; c < tauler.tamany[1]; c++) {
@@ -117,10 +115,9 @@ function resetTauler(tauler) {
 }
 
 
-/*funció que genera els botons (amb listeners) del tauler*/
+/*Funció que genera els botons inicials (amb listeners) del tauler*/
 function generarBotons() {
     let contenidorV = document.getElementById("botonsVaixells");
-    let contenidorD = document.getElementById("botonsDireccions");
 
     /* Botons dels vaixells */
     vaixellsJoc.forEach(vaixell => {
@@ -146,38 +143,24 @@ function generarBotons() {
     });
 
     /* Botons de direccions */
-    const direccions = ["H", "V"];
-    for (let dir of direccions) {
-        let botoDir = document.createElement("button");
-        botoDir.id = dir + "_btn";
-        botoDir.addEventListener("click", onClickDireccio);
+    let botoHor = document.getElementById("H_btn");
+    let botoVer = document.getElementById("V_btn");
 
-        if(dir == "H") botoDir.innerHTML = `→`;
-        else botoDir.innerHTML = `↓`;
+    botoHor.addEventListener("click", onClickDireccio);
+    botoVer.addEventListener("click", onClickDireccio);
 
-        contenidorD.appendChild(botoDir);
-    }
 
     /* Botó per reiniciar */
     let botoReset = document.getElementById("reset_btn");
-    botoReset.addEventListener("click", function () {
-        //Reinicio tauler
-        tauler2.reiniciar();
-        actualitzarTauler(tauler2);
-
-        //Activo tots els botons
-        let botons = contenidorV.children;
-        for( let boto of botons) {
-            boto.disabled = false;
-            resetTauler(tauler2);
-        }
-    });
+    botoReset.addEventListener("click", onReiniciarColocacio);
 
 }
 
-//funcions event handlers
+//EVENT HANDLERS
 
-/*Funció que agafa l'id del botó i guarda la direcció corresponent*/
+/*Funció que agafa l'id del botó i guarda la direcció corresponent.
+ - És cridada quan fas 'click' als botons H i D.
+*/
 function onClickDireccio(event) {
     let rendVaixell = document.getElementById("rendVaixell");
     //d'esquerra a dreta i de dalt a baix
@@ -196,15 +179,28 @@ function onClickDireccio(event) {
 
 }
 
-/*Funció que mou el rend del vaixell segons la posció del ratolí a la pantalla*/
-function onMoureRendVaixell(event) {
-    let rendVaixell = document.getElementById("rendVaixell");
+/*Funció que reinicia la col·locació dels vaixells
+ - És cridada quan fas 'click' al botó de RESET
+*/
+function onReiniciarColocacio() {
+    //Reinicio tauler (objecte)
+    tauler2.reiniciar();
+    actualitzarTauler(tauler2);
 
-    rendVaixell.style.top = event.clientY + 10 + "px";
-    rendVaixell.style.left = event.clientX - 10 + "px";
+    //Activo tots els botons
+    let contenidorV = document.getElementById("botonsVaixells");
+    let botons = contenidorV.getElementsByTagName("button");
+    for( let boto of botons) {
+        boto.disabled = false;
+    }
+    resetTauler(tauler2);
 }
 
-/*Funció que mou el rend del vaixell*/
+
+
+/*Funció que genera una previsualització del vaixell premut.
+    - És cridada quan has fet 'click' a un botó de vaixell
+*/
 function crearRendVaixell(event) {
     let contenidor = document.getElementById("j2");
 
@@ -214,16 +210,13 @@ function crearRendVaixell(event) {
         contenidor.removeChild(rendVaixell);
     }
 
+    //creo el div on anirà la plantilla/previsualització
     rendVaixell = document.createElement("div");
     rendVaixell.id = "rendVaixell";
     rendVaixell.classList.add("rendVaixell");
 
-    //canvio display-flex segons la direccio del vaixell
-    if (direccioUsu == "R") {
-        rendVaixell.style.flexDirection = "row";
-    } else {
-        rendVaixell.style.flexDirection = "column";;
-    }
+    //canvio display-flex segons la direccio del vaixell 
+    direccioUsu == "R" ?  rendVaixell.style.flexDirection = "row" : rendVaixell.style.flexDirection = "column"; //(condicional ternari)
 
     //creo la plantilla del vaixell
     for (let i = 0; i < vaixellUsu.size; i++) {
@@ -238,9 +231,22 @@ function crearRendVaixell(event) {
     rendVaixell.style.left = event.clientX + "px";
     rendVaixell.style.top = event.clientY + "px";
 
-    document.addEventListener('mousemove', onMoureRendVaixell);
+    document.addEventListener('mousemove', onMoureRendVaixell); //li afegeixo listener
 }
 
+/*Funció que mou el rend del vaixell segons la posció del ratolí a la pantalla
+    - És cridada quan has fet 'click' a un botó de vaixell i mous el ratolí
+*/
+function onMoureRendVaixell(event) {
+    let rendVaixell = document.getElementById("rendVaixell");
+
+    rendVaixell.style.top = event.clientY + 10 + "px";
+    rendVaixell.style.left = event.clientX - 10 + "px";
+}
+
+/*Funció que elimina el rend/previsualització del vaixell
+    - És cridada quan col·loques correctament el vaixell al taulell
+*/
 function eliminarRendVaixell() {
     let container = document.getElementById("j2");
     let rendVaixell = document.getElementById("rendVaixell");
@@ -250,6 +256,9 @@ function eliminarRendVaixell() {
 }
 
 
+/*Funció que controla la col·locasció de vaixells en les caselles del taulell. 
+    - És cridada quan fas 'click' a una casella del jugador durant la col·locació de vaixells inicials
+*/
 function onClickCasella(event) {
     if (vaixellUsu != "") {
         //extrec les coordenades -> x0y4 (id de la casella)
@@ -259,7 +268,6 @@ function onClickCasella(event) {
         let x = parseInt(coord.x);
         let y = parseInt(coord.y);
 
-        //console.log(x, y);
 
         //Col·loco els vaixells i actualitzo la part visual
         let vaixell = new Vaixell (vaixellUsu.name[0], vaixellUsu.name, vaixellUsu.size);
@@ -274,37 +282,31 @@ function onClickCasella(event) {
             document.getElementById(vaixellUsu.name + "_btn").disabled = true;
             vaixellUsu = "";
 
+            //afegeixo el vaixell a la llista del taulell del jugador
             tauler2.afegirVaixell(vaixell);//!!
             actualitzarTauler(tauler2);
 
             //drag&drop
             eliminarRendVaixell();
 
-            //quan col·loco tots els vaixells -> dono opció de començar a jugar
+            //si col·loco tots els vaixells -> dono opció de començar a jugar
             if(tauler2.vaixells.length == vaixellsJoc.length) {
-                crearBoto("jugar_btn", "botonsDireccions", "JUGAR");
                 let jugar_btn = document.getElementById("jugar_btn");
-                jugar_btn.addEventListener("click", iniciarJoc);
+                jugar_btn.style.display = "inline";
+                //jugar_btn.addEventListener("click", iniciarJoc);
 
             }
 
         }
-
 
     } else {
         alert("Selecciona un vaixell");
     }
 }
 
-function eliminarEvents() {
-    let caselles = document.querySelectorAll('#j2 .casella');
-
-    caselles.forEach(function (casella) {
-        casella.removeEventListener("click", onClickCasella);
-    })
-
-}
-
+/*Funció que amaga tots els botons de col·locació de vaixells i inicia el joc
+    - És cridada quan fas 'click' al botó de JUGAR
+*/
 function iniciarJoc() {
     //amago el botó de jugar, reset i vaixells
     let botoJugar = document.getElementById("jugar_btn");
@@ -317,7 +319,7 @@ function iniciarJoc() {
     let botonsVaixells = containerBotons.getElementsByTagName("button");
 
     for(let boto of botonsVaixells) {
-        boto.style.display = "none"
+        boto.style.display = "none";
     }
     
 
@@ -326,11 +328,25 @@ function iniciarJoc() {
 
 }
 
+/* Funció que elimina els events de les caselles*/
+function eliminarEvents() {
+    let caselles = document.querySelectorAll('#j2 .casella');
+
+    caselles.forEach(function (casella) {
+        casella.removeEventListener("click", onClickCasella);
+    })
+
+}
+
+
+
 
 
 //MAIN
-let tauler2;
 function init() {
+    let jugar_btn = document.getElementById("jugar_btn");
+    jugar_btn.style.display = "none";
+
     //TAULER 01: automàtic
     const tauler1 = new Tauler("j1", [10, 10]);
 

@@ -1,12 +1,13 @@
 
 h1, h2{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: whitesmoke;
+    color: #4248a5;
 }
 
 
 body{
-    background-color: rgb(22, 39, 56);
+    /*background-color: rgb(22, 39, 56);*/
+    background-color: #f0f0e0;
     padding: 20px;
 }
 
@@ -20,6 +21,9 @@ main {
 
 .tauler {
     display: grid;
+    border: 10px solid transparent;
+    border-image: url('tu-imagen-de-borde.png') 30 stretch;
+
     /* grid-template-columns: repeat(4, 50px); */
 
     justify-content: left;
@@ -31,7 +35,7 @@ main {
     height: 50px;
 
 
-    border: 1px solid black;
+    border: 1px solid rgb(181, 223, 240);
     text-align: center;
 
     display: flex;
@@ -41,6 +45,8 @@ main {
 
 .aigua {
     background-color: rgb(105, 200, 255);
+    background-image: url("mar.png");
+    background-size: cover;
 }
 
 .vaixell {
@@ -69,15 +75,15 @@ main {
 }
 
 .A {
-    background-color: rgb(245, 144, 144);
+    background-color: #de7a79;
 }
 
 .C {
-    background-color: rgb(184, 245, 144);
+    background-color: rgb(205, 248, 170);
 }
 
 .D {
-    background-color: rgb(238, 245, 144);
+    background-color: #f2dd8c;
 }
 
 .S {
