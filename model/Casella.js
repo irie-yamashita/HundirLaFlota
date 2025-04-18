@@ -1,11 +1,13 @@
 export class Casella {
     #aigua;
     #tocat;
+    #jugada;
     #nomVaixell;
 
     constructor() {
         this.#aigua = true;
         this.#tocat = false;
+        this.#jugada = false;
         this.#nomVaixell = "";
     }
 

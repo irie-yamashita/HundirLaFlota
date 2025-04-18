@@ -43,25 +43,7 @@ export class Tauler {
         }
 
     }
-
-    #vaixellEnfonsat (vaixell) {
-        let enfonsat = true;
-
-        //comprovo que el vaixell no estigui enfonsat
-        for(let coordenada of vaixell.coordenades) { //TODO: canviar-ho a WHILE
-
-            if(this.#caselles[coordenada[0]][coordenada[1]].tocat == false) {
-                enfonsat = false;
-            }
-        }
-
-        if(enfonsat) { //TODO: Esborrar
-            alert("TOCAT i ENFONSAT");
-        }
-
-        return enfonsat;
-    }
-    
+   
 
 
     afegirVaixell(vaixell) {
@@ -109,7 +91,8 @@ export class Tauler {
             if(nVaixells != this.#vaixells.length) {
                 console.log("No s'ha pogut col·locar tots els vaixells. Tornem a generar-los");
 
-                for (let f = 0; f < this.#tamany[0]; f++) {
+                this.reiniciar();
+/*                 for (let f = 0; f < this.#tamany[0]; f++) {
 
                     for(let c = 0; c < this.#caselles.length; c++ ) {
                         if(this.#caselles[f][c].aigua == false){
@@ -118,13 +101,14 @@ export class Tauler {
                         }
                     }
 
-                }
+                } */
             }
     
 
         } while (nVaixells != this.#vaixells.length)
         
     }
+
 
     /*
         Mètode que coloca un vaixell en les coordenades i direccio indicades
@@ -186,6 +170,26 @@ export class Tauler {
 
     }
 
+    //mètodes privats (helpers)
+
+    #vaixellEnfonsat (vaixell) {
+        let enfonsat = true;
+
+        //comprovo que el vaixell no estigui enfonsat
+        for(let coordenada of vaixell.coordenades) { //TODO: canviar-ho a WHILE
+
+            if(this.#caselles[coordenada[0]][coordenada[1]].tocat == false) {
+                enfonsat = false;
+            }
+        }
+
+        if(enfonsat) { //TODO: Esborrar
+            alert("TOCAT i ENFONSAT");
+        }
+
+        return enfonsat;
+    }
+
     #hiHaEspai(x, y, dir, q) {
         let xN = x;
         let yN = y;
@@ -243,3 +247,6 @@ function generarNumRandom(max) {
 
     return numRand
 }
+
+
+

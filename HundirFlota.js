@@ -405,7 +405,7 @@ function seleccionaCasella(event) {
     let casellaSeleccionada = document.getElementById(casellaUsu);
     casellaSeleccionada.classList.add("seleccionat");
 
-    
+
     //TODO: borrar listener
 }
 
@@ -449,7 +449,24 @@ function init() {
 
     console.log(taulerRival.vaixells);
 
+    atacarIA(taulerJugador);
+
 } init();
+
+function atacarIA(tauler) {
+    let x;
+    let y;
+    do {
+        x = generarNumRandom(tauler.tamany[0]);
+        y = generarNumRandom(tauler.tamany[1]);
+
+    } while(tauler.caselles[x][y].jugada) //TODO: OR perdre/guanyar  (hi ha bucle infinit)
+
+    tauler.caselles[x][y].aigua = false; //TODO: esborrar això i fer que quan trii, afegeixi una classe de tocat i una d'aigua
+    actualitzarTauler(tauler);
+    
+    console.log(x,y);
+}
 
 
 
@@ -469,4 +486,11 @@ function crearBoto(id, pare, text = "") {
     boto.textContent = text;
 
     contenidor.appendChild(boto);
+}
+
+/*Funció que genera números aleatoris.*/
+function generarNumRandom(max) {
+    const numRand = Math.floor(Math.random() * max);
+
+    return numRand
 }
