@@ -170,7 +170,7 @@ export class Tauler {
 
     }
 
-    victoria() {
+    derrota() {
         for(let vaixell of this.#vaixells) {
             if(vaixell.enfonsat == false) {
                 return false;

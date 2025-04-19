@@ -84,7 +84,6 @@ function actualitzaCasella(id, tauler) {
     let jugada = tauler.caselles[coord.x][coord.y].jugada;
     if (aigua) {
         casella.setAttribute("class", "casella aigua");
-        casella.textContent = ""; //TODO: esborrar, ho faré amb imatge i CSS
     } else {
 
         //trec la classe aigua, li afegeixo la classe vaixell general i la concreta
@@ -92,7 +91,6 @@ function actualitzaCasella(id, tauler) {
         casella.classList.add("vaixell");
 
         let nom = tauler.caselles[coord.x][coord.y].nomVaixell;
-        casella.innerHTML = nom;
         casella.classList.add(nom[0]);
 
 
@@ -117,12 +115,14 @@ function actualitzaCasella(id, tauler) {
 
 /*Funció que fa un reset del tauler (a nivell visual).*/
 function resetTauler(tauler) {
+
+    tauler.reiniciar();
+
     for (let f = 0; f < tauler.tamany[0]; f++) {
         for (let c = 0; c < tauler.tamany[1]; c++) {
-            let casella = document.getElementById(tauler.jugador + `x${f}y${c}`);
+            let casella = document.getElementById(tauler.jugador + `-${f}-${c}`);
 
-            casella.className = "casella aigua";
-            casella.textContent = "";
+            casella.setAttribute("class", "casella aigua");
         }
     }
 }
@@ -196,9 +196,8 @@ function onClickDireccio(event) {
  - És cridada quan fas 'click' al botó de RESET
 */
 function onReiniciarColocacio() {
-    //Reinicio tauler (objecte)
-    taulerJugador.reiniciar();
-    actualitzarTauler(taulerJugador);
+    //Reinicio tauler
+    resetTauler(taulerJugador);
 
     //Activo tots els botons
     let contenidorV = document.getElementById("botonsVaixells");
@@ -206,7 +205,10 @@ function onReiniciarColocacio() {
     for (let boto of botons) {
         boto.disabled = false;
     }
+
     resetTauler(taulerJugador);
+    let botoJugar = document.getElementById("jugar_btn");
+    botoJugar.style.display = "none";
 }
 
 
@@ -338,6 +340,7 @@ function iniciarJoc() {
 
     //elimino els events de col·locació de vaixells i activo els de joc
     eliminarEvents();
+    activarEventJoc();
 
 }
 
@@ -372,13 +375,18 @@ function atacarHandler() {
 
         //comprovo que usuari hagi seleccionat una casella
         if (casellaUsu) {
+            //elimino event
+            let casella = document.getElementById(casellaUsu);
+            casella.removeEventListener("click", seleccionaCasella);
+
+            //extrec les coordenades a partir del id del div
             let coord = extreureCoordenades(casellaUsu);
 
             //ataco
             let tocat = taulerRival.atacar(coord.x, coord.y);
 
             if (tocat) {
-                alert("TOCAAAAT");
+                //alert("TOCAAAAT");
             } else {
                 torn = false;
                 atacarIA();
@@ -387,6 +395,10 @@ function atacarHandler() {
             //mostro casella (visual)
             actualitzaCasella(casellaUsu, taulerRival);
             casellaUsu = "";
+
+            if(taulerRival.derrota()) {
+                finalitzarPartida("Usuari");
+            }
 
         } else {
             alert("Selecciona una casella per atacar!");
@@ -399,6 +411,11 @@ function atacarHandler() {
 
 }
 
+function finalitzarPartida(guanyador="") {
+    //TODO: crear pàgina emergent
+    fiPartida = true;
+    alert("S'ha acabat la partida. Ha guanyat: "+ guanyador);
+}
 
 function seleccionaCasella(event) {
     let casellaAnterior = document.getElementById(casellaUsu);
@@ -413,9 +430,6 @@ function seleccionaCasella(event) {
     //li canvio l'estil per marcar que està selecionada
     let casellaSeleccionada = document.getElementById(casellaUsu);
     casellaSeleccionada.classList.add("seleccionat");
-
-
-    //TODO: borrar listener
 }
 
 
@@ -442,7 +456,6 @@ function init() {
 
     //mostro el tauler
     crearTauler(taulerRival, "tauler1", false);
-    //actualitzarTauler(taulerRival); //TODO: esborrar
 
 
     //TAULER 02: jugador
@@ -453,8 +466,6 @@ function init() {
     //mostro el tauler
     crearTauler(taulerJugador, "tauler2", true);
     actualitzarTauler(taulerJugador);
-
-    activarEventJoc();
 
     console.log(taulerRival.vaixells);
 
@@ -480,10 +491,10 @@ function atacarIA() {
         torn = true;
     } else {
         //si ha tocat un vaixell, torna a atacar
-        if(!taulerJugador.victoria()) { //condicional per evitar bucle infit
+        if(!taulerJugador.derrota()) { //condicional per evitar bucle infit
             setTimeout(atacarIA, 1000);
         } else {
-            alert("HA GUANYAT LA MÀQUINA!");//TODO: borrar
+            finalitzarPartida("MÀQUINA");
         }
 
     }
