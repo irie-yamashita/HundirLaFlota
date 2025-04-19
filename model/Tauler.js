@@ -170,6 +170,16 @@ export class Tauler {
 
     }
 
+    victoria() {
+        for(let vaixell of this.#vaixells) {
+            if(vaixell.enfonsat == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     //mètodes privats (helpers)
 
     #vaixellEnfonsat (vaixell) {
