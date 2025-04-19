@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,41 +9,57 @@
     <script type="module" src="HundirFlota.js" defer></script>
 
 
-</head> 
+</head>
+
 <body>
     <h1>Hundir la Flota</h1>
     <main>
         <div id="j2">
             <h2>Tauler Jugador</h2>
-            <div id="tauler2" class="tauler">
+            <div class="tauler_container">
+                <div class="info_container">
+                    <div id="botonsVaixells">
+                        <p>Col·loca els vaixells de la teva flota en el tauler.</p>
 
-            </div>
-            <div id="botons_container">
-                <div id="botonsVaixells">
+                    </div>
+                    <div id="botonsDireccions">
+                        <button id="H_btn">→</button>
+                        <button id="V_btn">↓</button>
+                        <button id="reset_btn">RESET</button>
+                        <button id="jugar_btn">JUGAR</button>
+
+                    </div>
+                </div>
+                <div id="tauler2" class="tauler">
 
                 </div>
-                <div id="botonsDireccions">
-                    <button id="H_btn">→</button>
-                    <button id="V_btn">↓</button>
-                    <button id="reset_btn">RESET</button>
-                    <button id="jugar_btn">JUGAR</button>
 
-                </div>
             </div>
+
         </div>
 
 
         <div id="j1">
-            <h2 id="titolIA">Tauler IA</h2>
-            <div id="tauler1" class="tauler">
+            <h2>Tauler IA</h2>
+            <div class="tauler_container">
+                <div id="tauler1" class="tauler">
+
+                </div>
+                <div class="info_container">
+                    <p>Selecciona una casella i prem el botó per iniciar l'atac.</p>
+                    <button id="atacar_btn">ATACAR</button>
+                </div>
+
 
             </div>
 
-        </div>
-        <button id="atacar_btn">ATACAR</button>
 
-        
+        </div>
+
+
+
     </main>
 
 </body>
+
 </html>

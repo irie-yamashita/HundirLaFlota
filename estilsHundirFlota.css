@@ -1,7 +1,18 @@
+* {
+    padding: 0px;
+    margin: 0px;
+
+    /* border: solid black 1px; */
+}
+
+
 
 h1, h2{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #4248a5;
+
+    width: 100%;
+
 }
 
 
@@ -12,11 +23,31 @@ body{
 }
 
 main {
+    height: 100vh;
     display: flex;
     justify-content:space-around;
+
     gap:10px;
+    padding: 20px;
 
     width: 100%;
+}
+
+#j2, #j1 {
+    width: 50%;
+
+    display: flex;
+    flex-direction: column;
+    
+}
+
+
+.tauler_container {
+    display: flex;
+    font-size: 1rem;
+
+    gap: 10px;
+    padding: 20px;
 }
 
 .tauler {
@@ -31,6 +62,53 @@ main {
 
     margin-bottom: 10px;
 }
+
+/*INFO*/
+
+.info_container{
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+
+#botonsVaixells {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.vaixell_container{
+    width: 100%;
+    display: flex;
+
+    gap: 5px;
+}
+
+.vaixell_container button{
+    width: 100%;
+    text-align: left;
+
+    padding-left: 5px;
+}
+
+.vaixell_icona {
+    width: 25px;
+    height: 25px;
+}
+
+#botonsDireccions {
+    display: flex;
+    justify-content: center;
+    gap:5px
+}
+
+
+
+
+
 
 .casella {
     width: 50px;
@@ -105,4 +183,32 @@ main {
 
 .S {
     background-color: rgb(196, 144, 245);
+}
+
+
+/*Estils botons*/
+#H_btn, #V_btn {
+    width: 25px;
+    height: 25px;
+
+    text-align: center;
+}
+
+#reset_btn, #atacar_btn{
+    height: 25px;
+
+    padding: 0px 5px;
+    border-radius: 5px;
+
+    background-color:#4248a5;
+    color: whitesmoke;
+}
+
+#atacar_btn {
+    height: 40px;
+}
+#reset_btn:hover, #atacar_btn:hover{
+
+    background-color:#4249a5ad;
+    color: whitesmoke;
 }

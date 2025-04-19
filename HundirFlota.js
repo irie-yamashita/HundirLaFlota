@@ -134,10 +134,18 @@ function generarBotons() {
 
     /* Botons dels vaixells */
     vaixellsJoc.forEach(vaixell => {
+        let divVaixell = document.createElement("div");
         let boto = document.createElement("button");
+        let icona = document.createElement("div");
+
         boto.id = vaixell.name + "_btn";
         boto.classList.add("vaixellsBtn");
         boto.textContent = vaixell.name;
+
+        icona.classList.add(vaixell.name[0]);
+        icona.classList.add("vaixell_icona");
+
+        divVaixell.classList.add("vaixell_container");
 
         //listener per detectar quin vaixell col·locar
         boto.addEventListener("click", function (event) {
@@ -152,7 +160,9 @@ function generarBotons() {
 
         });
 
-        contenidorV.appendChild(boto);
+        divVaixell.appendChild(icona);
+        divVaixell.appendChild(boto);
+        contenidorV.appendChild(divVaixell);
     });
 
     /* Botons de direccions */
@@ -323,36 +333,28 @@ function colocacioVaixellHandler(event) {
     - És cridada quan fas 'click' al botó de JUGAR
 */
 function iniciarJoc() {
-    //amago el botó de jugar, reset i vaixells
-    let botoJugar = document.getElementById("jugar_btn");
-    botoJugar.style.display = "none";
+    //amago el botó de jugar, reset i direccions
+    let botonsDesactivar = document.querySelectorAll("#botonsDireccions button");
 
-    let botoReset = document.getElementById("reset_btn");
-    botoReset.style.display = "none";
-
-    let containerBotons = document.getElementById("botons_container");
-    let botonsVaixells = containerBotons.getElementsByTagName("button");
-
-    for (let boto of botonsVaixells) {
+    for (let boto of botonsDesactivar) {
         boto.style.display = "none";
     }
 
 
-    //elimino els events de col·locació de vaixells i activo els de joc
-    eliminarEvents();
+    let botonsVaixells = document.querySelectorAll("#botonsVaixells button");
+
+    for (let boto of botonsVaixells) {
+        //trec listeners
+        boto.removeEventListener("click", colocacioVaixellHandler);
+        //TODO: canvio classe
+    }
+
+
+    //activo els de joc
     activarEventJoc();
 
 }
 
-/* Funció que elimina els events de les caselles*/
-function eliminarEvents() {
-    let caselles = document.querySelectorAll('#j2 .casella');
-
-    caselles.forEach(function (casella) {
-        casella.removeEventListener("click", colocacioVaixellHandler);
-    })
-
-}
 
 
 
