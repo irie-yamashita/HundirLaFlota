@@ -37,9 +37,9 @@ export class Tauler {
             
             //comprovo si està ja enfonsat
             let vaixellTriat = this.#vaixells.find((vaixell) => vaixell.id == idVaixell);
-            vaixellTriat.enfonsat = this.#vaixellEnfonsat(vaixellTriat);
+            vaixellTriat.enfonsat = this.vaixellEnfonsat(vaixellTriat);
 
-            return true //he tocat
+            return vaixellTriat;
         }
 
     }
@@ -182,22 +182,18 @@ export class Tauler {
 
     //mètodes privats (helpers)
 
-    #vaixellEnfonsat (vaixell) {
+    vaixellEnfonsat (vaixell) {
         let enfonsat = true;
 
         //comprovo que el vaixell no estigui enfonsat
-        for(let coordenada of vaixell.coordenades) { //TODO: canviar-ho a WHILE
-
+        for(let coordenada of vaixell.coordenades) {
             if(this.#caselles[coordenada[0]][coordenada[1]].tocat == false) {
-                enfonsat = false;
+                return false;
             }
         }
 
-        if(enfonsat) { //TODO: Esborrar
-            alert("TOCAT i ENFONSAT");
-        }
-
-        return enfonsat;
+        vaixell.enfonsat = true;
+        return true;
     }
 
     #hiHaEspai(x, y, dir, q) {
@@ -237,6 +233,10 @@ export class Tauler {
 
         return correcte; 
 
+    }
+
+    obtenirVaixell(nom) {
+        return this.#vaixells.found((vaixell) => vaixell.nom == nom);
     }
 
     //getters i setters

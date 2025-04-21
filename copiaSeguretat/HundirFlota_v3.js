@@ -150,7 +150,6 @@ function generarBotons() {
 
         icona.classList.add(vaixell.name[0]);
         icona.classList.add("vaixell_icona");
-        icona.id = vaixell.name+"_icona";
 
         divVaixell.classList.add("vaixell_container");
 
@@ -159,6 +158,8 @@ function generarBotons() {
 
             //trobo el vaixell assignat al botó mirant si l'id és igual
             vaixellUsu = vaixellsJoc.find((element) => element.name == event.target.id.replace("_btn", ""));
+
+            console.log("Vaixell triat", vaixellUsu);
 
             //drag & drop
             crearRendVaixell(event);
@@ -340,20 +341,25 @@ function colocacioVaixellHandler(event) {
 function iniciarJoc() {
     //amago el botó de jugar, reset i direccions
     let botonsDesactivar = document.querySelectorAll("#botonsDireccions button");
-    botonsDesactivar.forEach((boto) => boto.style.display = "none");
 
-    //elimino events
+    for (let boto of botonsDesactivar) {
+        boto.style.display = "none";
+    }
+
+
     let botonsVaixells = document.querySelectorAll("#botonsVaixells button");
-    let casellesJugador = document.querySelectorAll("#j2 .casella");
 
-    botonsVaixells.forEach((boto) => boto.removeEventListener("click", crearRendVaixell));
-    casellesJugador.forEach((casella) => casella.removeEventListener("click", colocacioVaixellHandler));
+    for (let boto of botonsVaixells) {
+        //trec listeners
+        boto.removeEventListener("click", colocacioVaixellHandler);
+        //TODO: canvio classe
+    }
+
 
     //activo els de joc
     activarEventJoc();
 
 }
-
 
 
 
@@ -371,7 +377,7 @@ function activarEventJoc() {
 
 }
 
-/* Funció que controla els atacs de l'USUARI.
+/* Funció que controla els atacs de l'usuari.
     - És cridada quan fas 'click' al botó d'ATACAR
 */
 function atacarHandler() {
@@ -389,20 +395,16 @@ function atacarHandler() {
 
             //ataco
             let tocat = taulerRival.atacar(coord.x, coord.y);
-
-            //mostro casella (visual)
-            actualitzaCasella(casellaUsu, taulerRival);
-            casellaUsu = "";
+            console.log(tocat);
 
             if (!tocat) {
                 torn = false;
                 atacarIA();
-            } else {
-                if(tocat.enfonsat == true){
-                    alert("Tocat i enfonsat!");
-                }
             }
 
+            //mostro casella (visual)
+            actualitzaCasella(casellaUsu, taulerRival);
+            casellaUsu = "";
 
             if(taulerRival.derrota()) {
                 finalitzarPartida("Usuari");
@@ -441,7 +443,7 @@ function atacarIA() {
     let x; let y;
 
 
-
+    do {
         //ataco fins que seleccioni una casella aigua o guanyi
         let correcte = false;
         do {
@@ -456,144 +458,100 @@ function atacarIA() {
                 x = coordenadesVeines[0];
                 y = coordenadesVeines[1];
 
-                //console.log(coordenadesVeines, IA.direccions, IA.memoria);
-               
+                console.log(coordenadesVeines, IA.direccions, IA.memoria);
+                alert("he tocat un vaixell");
             }
+            console.log("Holoa");
 
             //comprovo si és una casella que ja he atacat
             if(!taulerJugador.caselles[x][y].jugada) {
                 correcte = true;
             } else if(taulerJugador.caselles[x][y].jugada && IA.memoria.length > 0){
-                canviDireccioIA();
+                alert(`ja he tocat la casella [${x}, ${y}]`);
+                if(IA.direccions.length > 0) {
+                    IA.direccions.shift();// vaig a la següent direcció
+                } else {
+                    IA.memoria= [];
+                }
+               
             }
             
         } while (!correcte) //atrapo fins que generi unes coordenades que no hagi atacat anteriorment
 
         //ataco
         let vaixellTocat = taulerJugador.atacar(x, y);
-        taulerJugador.caselles[x][y].jugada = true;
+        console.log(vaixellTocat);
 
         //si he tocat (direcció correcta)
         if(vaixellTocat) {
-            //console.log("en principi he tocat", vaixellTocat);
-
-            //si és el primer cop que toco, reinicio les direccions i em guardo la casella
-            if(IA.memoria.length <= 0) {
-                IA.direccions = ['U', 'D', 'L', 'R'];
-                IA.casellaInicial[0] = x;
-                IA.casellaInicial[1] = y;
-            }
-
             IA.memoria[0] = x;
             IA.memoria[1] = y;
 
-            //alert(`he tocat un vaixell ${IA.memoria[0]}, ${IA.memoria[1]}`);
-
+            //si és el primer cop que toco, reinicio les direccions
+            if(IA.memoria.length <= 0) {
+                IA.direccions = ['U', 'D', 'L', 'R'];
+            }
 
             //si he enfonsat el vaixell, borro la memòria i reinicio les direccions
             if(taulerJugador.vaixellEnfonsat(vaixellTocat)) {
                 IA.memoria = [];
-                IA.casellaInicial = [];
                 IA.direccions = ['U', 'D', 'L', 'R'];
             }
 
-            //actualitzo la part visual
-            actualitzarEnfonsat(vaixellTocat);
-            let idCasella = generarIdCasella(taulerJugador, x, y);
-            actualitzaCasella(idCasella, taulerJugador);
-
-            if(!taulerJugador.derrota()) {
-
-                setTimeout(atacarIA, 2000); //setTimeout per simular que la IA pensa
-            } else {
-                finalitzarPartida("Màquina");
-            }
-
-
-        } else {
-            //si he tocat aigua, però encara no he enfonsat, canvio de direcció
-            if(IA.memoria.length > 0) {
-                canviDireccioIA();
-            }
-            torn = true;
+        } else { //si és la direcció correcte guardo la nova posició
+            IA.direccions.shift();
         }
-
+    
+    
         //canvio estat de la casella i actualitzo la part visual
+        taulerJugador.caselles[x][y].jugada = true;
         let idCasella = generarIdCasella(taulerJugador, x, y);
         actualitzaCasella(idCasella, taulerJugador);
 
 
+    } while(taulerJugador.caselles[x][y].aigua == false && !taulerJugador.derrota())
+
+        if(taulerJugador.derrota()) {
+            finalitzarPartida("Màquina");
+        }
+
+    torn = true;
 
 }
 
 function generarCoordenadaVeina() {
-    let correcte;
-    let nX;
-    let nY;
+    let nX = IA.memoria[0];
+    let nY = IA.memoria[1];
 
-    do {
-        nX = IA.memoria[0];
-        nY = IA.memoria[1];
-        correcte = true;
+    let direccio = IA.direccions[0];
 
-        let direccio = IA.direccions[0];
-        switch (direccio) {
-            case 'U':
-                nX--;
-                break;
-            case 'D':
-                nX++;
-                break;
-            case 'L':
-                nY--;
-                break;
-            case 'R':
-                nY++;
-                break;
-        } 
-    
-        //si toco algun borde, vol dir que he d'anar cap a l'altra direcció
-        if(nX < 0 || nX > taulerJugador.tamany[0]-1 || nY < 0 || nY > taulerJugador.tamany[0]-1) {
-            canviDireccioIA();
-            correcte = false;
-        }
 
-    } while(!correcte) //atrapo fins obtenir una casella que existeixi
+    switch (direccio) {
+        case 'U':
+            nX--;
+            break;
+        case 'D':
+            nX++;
+            break;
+        case 'L':
+            nY--;
+            break;
+        case 'R':
+            nY++;
+            break;
+    } 
+
+    console.log(nX, nY);
 
     return [nX, nY];
 }
 
+
 function finalitzarPartida(guanyador="") {
+    //TODO: crear pàgina emergent
     fiPartida = true;
     alert("S'ha acabat la partida. Ha guanyat: "+ guanyador);
-
-    let resultat = document.createElement("p");
-    resultat.textContent = "Ha guanyat: "+ guanyador;
-    document.body.insertBefore(resultat, document.body.firstChild);
-
-    eliminarEventsFinals();
 }
-
-function eliminarEventsFinals() {
-    let botoAtacar = document.getElementById("atacar_btn");
-    botoAtacar.removeEventListener("click", atacarHandler);
-
-    let caselles = document.querySelectorAll("#tauler1 .casella");
-    for(let casella of caselles) {
-        casella.removeEventListener("click", seleccionaCasella);
-    }
-}
-
-function actualitzarEnfonsat(vaixell) {
-    if(vaixell.enfonsat == true) {
-        let idIcona = vaixell.nom+"_icona";
-
-        let iconaVaixell = document.getElementById(idIcona);
-
-        iconaVaixell.textContent = "💥";
-    }
-}
-
 
 
 
@@ -630,20 +588,10 @@ function init() {
     crearTauler(taulerJugador, "tauler2", true);
     actualitzarTauler(taulerJugador);
 
+    console.log(taulerRival.vaixells);
 
 
 } init();
-
-
-function canviDireccioIA() {
-    IA.direccions.shift();
-    IA.memoria[0] = IA.casellaInicial[0];
-    IA.memoria[1] = IA.casellaInicial[1];
-}
-
-
-
-
 
 
 //UTILS
