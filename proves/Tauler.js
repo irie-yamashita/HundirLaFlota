@@ -101,17 +101,12 @@ export class Tauler {
     colocarVaixell(vaixell, x, y, direccio){
 
         //comprovo que hi hagi espai pel vaixell
-        if(this.#hiHaEspai(x, y, direccio, vaixell.mida)) { 
+        let coordenadesVaixell = this.#hiHaEspai(x, y, direccio, vaixell.mida);
+        if(coordenadesVaixell) { 
 
             //modifico estat de la casella
-            for (let i = 0; i < vaixell.mida; i++) {
-                let nX = x;
-                let nY = y;
-
-                if(direccio == 0)
-                    nX = x + i;
-                else
-                    nY = y +i;
+            for (let coordenada of coordenadesVaixell) {
+                let nX = coordenada[0]; let nY = coordenada[1];
 
                 this.#caselles[nX][nY].aigua = false;
                 this.#caselles[nX][nY].nomVaixell = vaixell.id;      
@@ -124,7 +119,6 @@ export class Tauler {
         } else {
             return false
         }
-        
 
     }
 
@@ -168,33 +162,30 @@ export class Tauler {
         return true;
     }
 
+    /*Mètode que valida si es pot col·locar un vaixell. Si es pot, retorna les coordenades. Si no es pot, retorna null.*/
     #hiHaEspai(x, y, dir, quantitat) {
+        let novesCoordenades = [];
         let xN = x; let yN = y;
-        let i = 0;
-        let correcte = true;
 
-        do {
+        //comprovo per cada casella que ocuparia el vaixell (tamany)
+        for(let i = 0; i < quantitat; i++) {
 
             //genero noves coordenades
-            if(dir == 0)
-                xN = x + i;
-            else
-                yN = y +i;
+            dir == 0 ? xN = x + i : yN = y + i; //(si és dir 0 -> horitzontal (x+i), si és dir 1 -> vertical (y+i)
 
             //comprovo que no estigui fora del tauler
             if(xN > this.#tamany[0]-1 || xN < 0 || yN < 0 || yN > this.#tamany[1]-1) { //-1 perquè comencem per [0]
                 console.log('Fora del tauler!');
-                return false
+                return null;
             } else if (this.#caselles[xN][yN].aigua == false) { //comprovo que no sigui una casella ja ocupada
                 console.log('Casella ocupada!',xN, yN);
-                return false
+                return null;
+            } else {
+                novesCoordenades.push([xN, yN]);
             }
+        }
 
-            i++;
-
-        } while(correcte && i < quantitat)
-
-        return true; 
+        return novesCoordenades; 
 
     }
 
