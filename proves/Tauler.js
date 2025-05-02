@@ -179,7 +179,7 @@ export class Tauler {
             } else if (this.#caselles[fN][cN].aigua == false) { //comprovo que no sigui una casella ja ocupada
                 console.log('Casella ocupada!',fN, cN);
                 return null;
-            }if(!this.#hihaSeparacio(fN, cN, dir, i, quantitat)) {
+            }if(!this.#hihaSeparacio(fN, cN, dir, i, quantitat)) { //comprovo que no estigui enganxat a un altre vaixell
                 console.log("Té un vaixell al voltant", fN, cN);
                 return null;
             }
@@ -187,7 +187,6 @@ export class Tauler {
                 novesCoordenades.push([fN, cN]);
             }
             
-
         }
 
         return novesCoordenades; 
@@ -195,42 +194,28 @@ export class Tauler {
     }
 
     #hihaSeparacio(f, c, direccio, i, quantitat) {
+        let afegits = [];
         let veines = [];
 
-        //direccio 0 -> horitzontal
-        if(direccio == 0) {
-            veines.push([f-1, c], [f+1, c]);
+        //em guardo el que li he de sumar per trobar les caselles veïnes
+        afegits.push([-1, 0], [1, 0]);
 
-            //si és la primera casella
-            if(i == 0) {
-                veines.push([f, c-1]);
-
-                veines.push([f-1, c-1]);
-                veines.push([f+1, c-1]);
-            } else if(i == quantitat-1) {//si és l'última casella
-                veines.push([f, c+1]);
-
-                veines.push([f-1, c+1]);
-                veines.push([f+1, c+1]);
-            }
-
-        } else {
-            veines.push([f, c-1], [f, c+1]);
-
-            //si és la primera casella
-            if(i == 0) {
-                veines.push([f-1, c]);
-
-                veines.push([f-1, c-1]);
-                veines.push([f-1, c+1]);
-            } else if (i == quantitat-1) {
-                veines.push([f+1, c]);
-
-                veines.push([f+1, c-1]);
-                veines.push([f+1, c+1]);
-            }
-    
+        //si és la primera casella
+        if(i == 0) {
+            afegits.push([0, -1], [-1, -1], [1, -1]);
+        } else if(i == quantitat-1) {//si és l'última casella
+            afegits.push([0, +1], [-1, +1], [1, +1]);
         }
+
+        //trobo les caselles veines
+        veines = afegits.map( (afegit) => {
+            //si és direcció == 1 -> vertical (inverteixo els afegits)
+            if(direccio == 1) {
+                return [f+afegit[1], c+afegit[0]];
+            }
+            
+            return [f+afegit[0], c+afegit[1]];
+        });
 
         //trec les coordenades que es troben fora del tauler
         veines = veines.filter( (coord) => {
@@ -242,6 +227,7 @@ export class Tauler {
                 return false;
             }
         }
+
         return true;
 
     }
