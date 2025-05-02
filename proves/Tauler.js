@@ -179,14 +179,73 @@ export class Tauler {
             } else if (this.#caselles[fN][cN].aigua == false) { //comprovo que no sigui una casella ja ocupada
                 console.log('Casella ocupada!',fN, cN);
                 return null;
-            } else {
+            }if(!this.#hihaSeparacio(fN, cN, dir, i, quantitat)) {
+                console.log("Té un vaixell al voltant", fN, cN);
+                return null;
+            }
+            else {
                 novesCoordenades.push([fN, cN]);
             }
+            
+
         }
 
         return novesCoordenades; 
 
     }
+
+    #hihaSeparacio(f, c, direccio, i, quantitat) {
+        let veines = [];
+
+        //direccio 0 -> horitzontal
+        if(direccio == 0) {
+            veines.push([f-1, c], [f+1, c]);
+
+            //si és la primera casella
+            if(i == 0) {
+                veines.push([f, c-1]);
+
+                veines.push([f-1, c-1]);
+                veines.push([f+1, c-1]);
+            } else if(i == quantitat-1) {//si és l'última casella
+                veines.push([f, c+1]);
+
+                veines.push([f-1, c+1]);
+                veines.push([f+1, c+1]);
+            }
+
+        } else {
+            veines.push([f, c-1], [f, c+1]);
+
+            //si és la primera casella
+            if(i == 0) {
+                veines.push([f-1, c]);
+
+                veines.push([f-1, c-1]);
+                veines.push([f-1, c+1]);
+            } else if (i == quantitat-1) {
+                veines.push([f+1, c]);
+
+                veines.push([f+1, c-1]);
+                veines.push([f+1, c+1]);
+            }
+    
+        }
+
+        //trec les coordenades que es troben fora del tauler
+        veines = veines.filter( (coord) => {
+            return coord[0] >= 0 && coord[0] < this.#tamany[0] && coord[1] >= 0 && coord[1] < this.#tamany[1];
+        });
+
+        for (let veina of veines) {
+            if(this.#caselles[veina[0]][veina[1]].aigua == false) {
+                return false;
+            }
+        }
+        return true;
+
+    }
+
 
     obtenirVaixell(nom) {
         return this.#vaixells.found((vaixell) => vaixell.nom == nom);

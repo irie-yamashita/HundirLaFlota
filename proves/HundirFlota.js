@@ -76,7 +76,9 @@ function actualitzarTauler(tauler) {
 function actualitzaCasella(id, tauler) {
 
     let casella = document.getElementById(id);
+
     let coord = extreureCoordenades(id);
+    //casella.textContent = `[${coord.f},${coord.c}]`;
 
     let aigua = tauler.caselles[coord.f][coord.c].aigua;
     let jugada = tauler.caselles[coord.f][coord.c].jugada;
@@ -212,7 +214,7 @@ function gestionarClickCasella() {
 
         //comprovo si el vaixell s'ha col·locat correctament
         if (!colocat) {
-            alert("El vaixell no es pot col·locar aquí.");
+            alert("El vaixell no es pot col·locar aquí. Recorda que els vaixells no es poden tocar!");
         } else {
             //desactivo el botó i poso en blanc el vaixell seleccionat
             document.getElementById(vaixellUsu.name + "_btn").disabled = true;
