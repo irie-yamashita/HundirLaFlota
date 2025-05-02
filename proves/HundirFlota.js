@@ -32,7 +32,7 @@ let vaixellsJoc = cargarJson(vaixellsJSON);
 
 //FUNCIONS
 
-/*PART 1: GENERACIÓ TAULELLS*/
+/*PART 1: GENERACIÓ TAULERS*/
 /*Funció que crea divs per cada casella d'un tauler (matriu).*/
 function crearTauler(tauler, id, interactuable = false) {
     let divTauler = document.getElementById(id);
@@ -115,6 +115,7 @@ function actualitzaCasella(id, tauler) {
 function resetTauler(tauler) {
 
     tauler.reiniciar();
+    tauler.vaixells = [];
 
     for (let f = 0; f < tauler.tamany[0]; f++) {
         for (let c = 0; c < tauler.tamany[1]; c++) {
@@ -133,17 +134,12 @@ function generarBotons() {
     /* Botons dels vaixells */
     vaixellsJoc.forEach(vaixell => {
         let divVaixell = crearElement("div", "", "", ["vaixell_container"], contenidorV);
+        crearElement("div", "", vaixell.name+"_icona", [vaixell.name[0], "vaixell_icona"], divVaixell);
         let boto = crearElement("button", vaixell.name, vaixell.name+"_btn", ["vaixellsBtn"], divVaixell);
-        let icona = crearElement("div", "", vaixell.name+"_icona", [vaixell.name[0], "vaixell_icona"], divVaixell);
+
 
         //listener per detectar quin vaixell col·locar
-        boto.addEventListener("click", function (event) {
-            //trobo el vaixell assignat al botó mirant si l'id és igual
-            vaixellUsu = vaixellsJoc.find((element) => element.name == event.target.id.replace("_btn", ""));
-
-            //drag & drop
-            crearRendVaixell(event);
-        });
+        boto.addEventListener("click", gestionarClickVaixell);
 
     });
 
@@ -165,7 +161,7 @@ function init() {
     //Carrego dades dels vaixells
     let vaixellsJoc = cargarJson(vaixellsJSON);
 
-    //TAULER 01: automàtic
+    //TAULER 01: IA
     taulerIA = new Tauler("j1", [10, 10]);
 
     //genero un vaixell de cada tipus
@@ -175,21 +171,21 @@ function init() {
         taulerIA.afegirVaixell(vaixell);
     }
 
-    //crido mètode per posicionar els vaixells
-    taulerIA.colocarVaixellsAleatoris();
+    taulerIA.colocarVaixellsAleatoris(); //crido mètode per posicionar els vaixells
 
-    //mostro el tauler
+    //mostro el tauler (part visual)
     crearTauler(taulerIA, "tauler1", false);
     actualitzarTauler(taulerIA);
+
 
     //TAULER 02: jugador
     //creo el taulell i botons
     taulerJugador = new Tauler("j2", [10, 10]);
-    generarBotons();
 
     //mostro el tauler
     crearTauler(taulerJugador, "tauler2", true);
     actualitzarTauler(taulerJugador);
+    generarBotons();
 
 
 } init();
@@ -231,9 +227,9 @@ function gestionarClickCasella() {
 
             //si col·loco tots els vaixells -> dono opció de començar a jugar
             if (taulerJugador.vaixells.length == vaixellsJoc.length) {
-                let jugar_btn = document.getElementById("jugar_btn");
-                jugar_btn.style.display = "inline";
-                jugar_btn.addEventListener("click", iniciarJoc);
+                let contenidorBotons = document.getElementById("botonsDireccions");
+                let jugar_btn = crearElement("button", "JUGAR", "jugar_btn", [], contenidorBotons);
+                jugar_btn.addEventListener("click", gestionarClickJugar);
             }
 
         }
@@ -243,11 +239,23 @@ function gestionarClickCasella() {
     }
 }
 
+/*Funció que agafa l'id del vaixell seleccionat i el guarda a la variable vaixellUsu;
+ - És cridada quan fas 'click' als botons de vaixells durant el posicionament d'aquests.
+*/
+function gestionarClickVaixell(event) {
+    //trobo el vaixell assignat al botó mirant si l'id és igual
+    vaixellUsu = vaixellsJoc.find((element) => element.name == event.target.id.replace("_btn", ""));
+
+    //drag & drop
+    crearRendVaixell(event);
+}
+
 
 /*Funció que agafa l'id del botó i guarda la direcció corresponent.
  - És cridada quan fas 'click' als botons H i D.
 */
 function gestionarClickDireccio(event) {
+    console.log("DIRECCCIÓ");
     let rendVaixell = document.getElementById("rendVaixell");
 
     //d'esquerra a dreta i de dalt a baix
@@ -268,6 +276,7 @@ function gestionarClickDireccio(event) {
  - És cridada quan fas 'click' al botó de RESET
 */
 function gestionarReset() {
+    console.log("RESET");
     //Reinicio tauler
     resetTauler(taulerJugador);
 
@@ -280,7 +289,10 @@ function gestionarReset() {
 
     resetTauler(taulerJugador);
     let botoJugar = document.getElementById("jugar_btn");
-    botoJugar.style.display = "none";
+    if(botoJugar) {
+        botoJugar.remove();
+    }
+
 }
 
 /*DRAG & DROP*/
@@ -336,6 +348,61 @@ function eliminarRendVaixell() {
     document.removeEventListener('mousemove', onMoureRendVaixell); //trec listener
 }
 
+/*Funció que amaga tots els botons de col·locació de vaixells i inicia el joc (atac)
+    - És cridada quan fas 'click' al botó de JUGAR
+*/
+function gestionarClickJugar() {
+
+    //elimino listeners
+    document.getElementById("reset_btn").removeEventListener("click", gestionarReset);
+    document.getElementById("H_btn").removeEventListener("click", gestionarClickDireccio);
+    document.getElementById("V_btn").removeEventListener("click", gestionarClickDireccio);
+
+
+    //amago els botons
+    document.querySelectorAll("#botonsDireccions button").forEach((boto) => boto.style.display = "none");
+
+    //elimino events (dels vaixells i caselles)
+    document.querySelectorAll("#botonsVaixells button").forEach((boto) => boto.removeEventListener("click", gestionarClickVaixell));
+    document.querySelectorAll("#j2 .casella").forEach((casella) => casella.removeEventListener("click", gestionarClickCasella));
+
+    //activo els de joc
+    activarEventsAtac();
+
+}
+
+
+/*PART 3: ATAC*/
+/* Funció activa els events del joc referents a l'atac*/
+function activarEventsAtac() {
+
+    //Afegeixo listeners a les caselles del tauler IA
+    document.querySelectorAll("#j1 .casella").forEach((casella) =>  casella.addEventListener('click', gestionarClickCasellaIA));
+
+    //Afegeixo listener al botó d'atac
+    document.getElementById("atacar_btn").addEventListener("click", atacarHandler);
+
+}
+
+/* Funció que guarda quina és l'id de la casella seleccionada i la destaca.
+    - És cridada quan fas 'click' a una casella del tauler de la IA
+*/
+function gestionarClickCasellaIA(event) {
+
+    //trec el outline de la casella anterior
+    let casellaAnterior = document.getElementById(casellaUsu);
+    if (casellaAnterior) {
+        casellaAnterior.classList.remove("seleccionat");
+    }
+
+    //guardo l'id de la casella seleccionada
+    casellaUsu = event.target.id;
+
+    //li canvio l'estil per marcar que està selecionada
+    let casellaSeleccionada = document.getElementById(casellaUsu);
+    casellaSeleccionada.classList.add("seleccionat");
+}
+
 
 
 //UTILS
@@ -375,9 +442,9 @@ function crearElement(tipus, contingut, id, classes, pare) {
     if(contingut != "")
         element.textContent = contingut;
 
-    if(classes.length != 0) {
+    if(classes.length != 0)
         classes.forEach((classe) => element.classList.add(classe));
-    }
+
 
     pare.appendChild(element);
     return element;

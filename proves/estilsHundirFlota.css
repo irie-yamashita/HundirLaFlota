@@ -106,10 +106,6 @@ main {
 }
 
 
-
-
-
-
 .casella {
     width: 50px;
     height: 50px;
@@ -125,7 +121,11 @@ main {
 }
 
 .casella:hover {
-    box-shadow: inset 0 0 0 3px #f584e2; /* Borde interno */
+    outline: 3px #4248a5 solid;
+
+    /*per col·locar casella a dalt del tot*/
+    position: relative;
+    z-index: 5;
 }
 
 .seleccionat {
@@ -156,6 +156,7 @@ main {
     box-shadow: -10px -10px 2px 1px rgba(4, 25, 128, 0.2);
 
     position: fixed;
+    z-index: 10;
 
     display: flex;
     flex-direction:row;
