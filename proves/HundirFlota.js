@@ -1,5 +1,6 @@
 import { Tauler } from "./Tauler.js";
 import { Vaixell } from "./Vaixell.js";
+import { IA } from "./IA.js";
 
 //Declaració variables globals
 let vaixellUsu = "";
@@ -10,13 +11,7 @@ let torn = true;
 
 let taulerIA;
 let taulerJugador;
-
-let IA = {
-    "direccions": ['U', 'D', 'L', 'R'],
-    "memoria": [],
-    "casellaInicial": []
-}
-
+let AI;
 
 const vaixellsJSON = `[
 { "name": "Portaaviones", "size": 5 },
@@ -73,7 +68,7 @@ function actualitzarTauler(tauler) {
 }
 
 /*Funció que consulta l'objecte tauler i actualitza la casella amb l'id passat per paràmetre.*/
-function actualitzaCasella(id, tauler) {
+function actualitzaCasella(id, tauler, jugador = false) {
 
     let casella = document.getElementById(id);
 
@@ -102,13 +97,14 @@ function actualitzaCasella(id, tauler) {
 
     }
 
-    //si la casella ha estat jugada per la IA, faig canvi visual
-    if (jugada) {
+    //si és del tauler del jugador canvio la part visual
+    if(jugador == true) {
         let mascara = document.createElement("div");
         mascara.setAttribute("class", "mascara");
 
         casella.appendChild(mascara);
     }
+
 }
 
 
@@ -177,12 +173,14 @@ function init() {
 
     //mostro el tauler (part visual)
     crearTauler(taulerIA, "tauler1", false);
-    actualitzarTauler(taulerIA);
 
 
     //TAULER 02: jugador
     //creo el taulell i botons
     taulerJugador = new Tauler("j2", [10, 10]);
+    AI = new IA (taulerIA.tamany[0]);
+
+    console.log(AI);
 
     //mostro el tauler
     crearTauler(taulerJugador, "tauler2", true);
@@ -257,7 +255,6 @@ function gestionarClickVaixell(event) {
  - És cridada quan fas 'click' als botons H i D.
 */
 function gestionarClickDireccio(event) {
-    console.log("DIRECCCIÓ");
     let rendVaixell = document.getElementById("rendVaixell");
 
     //d'esquerra a dreta i de dalt a baix
@@ -278,7 +275,6 @@ function gestionarClickDireccio(event) {
  - És cridada quan fas 'click' al botó de RESET
 */
 function gestionarReset() {
-    console.log("RESET");
     //Reinicio tauler
     resetTauler(taulerJugador);
 
@@ -382,7 +378,7 @@ function activarEventsAtac() {
     document.querySelectorAll("#j1 .casella").forEach((casella) =>  casella.addEventListener('click', gestionarClickCasellaIA));
 
     //Afegeixo listener al botó d'atac
-    document.getElementById("atacar_btn").addEventListener("click", atacarHandler);
+    document.getElementById("atacar_btn").addEventListener("click", gestionarAtac);
 
 }
 
@@ -398,11 +394,147 @@ function gestionarClickCasellaIA(event) {
     }
 
     //guardo l'id de la casella seleccionada
-    casellaUsu = event.target.id;
+    casellaUsu = this.id;
 
     //li canvio l'estil per marcar que està selecionada
     let casellaSeleccionada = document.getElementById(casellaUsu);
     casellaSeleccionada.classList.add("seleccionat");
+}
+
+function atacar(f, c, tauler) {
+    let estatAtac = tauler.atacar(f, c);
+    actualitzaCasella(generarIdCasella(tauler, f, c), tauler);
+
+    return estatAtac
+}
+
+/* Funció que controla els atacs de l'USUARI.
+    - És cridada quan fas 'click' al botó d'ATACAR
+*/
+function gestionarAtac() {
+
+    if (torn) {
+
+        //comprovo que usuari hagi seleccionat una casella
+        if (casellaUsu) {
+            //elimino event
+            let casella = document.getElementById(casellaUsu);
+            casella.removeEventListener("click", gestionarClickCasellaIA);
+
+            //extrec les coordenades a partir del id del div
+            let coord = extreureCoordenades(casellaUsu);
+
+            //ataco
+            let estatAtac = taulerIA.atacar(coord.f, coord.c);
+
+            //mostro casella (visual)
+            actualitzaCasella(casellaUsu, taulerIA);
+            casellaUsu = "";
+
+            //si usuari no ha tocat, canvi de torn, li toca a la màquina
+            if (estatAtac == false) {
+                torn = false;
+                atacarIA();
+            } else if (estatAtac != true) {
+                alert("Tocat i enfonsat!");
+            }
+
+            if(taulerIA.derrota()) {
+                finalitzarPartida("Usuari");
+            }
+
+        } else {
+            alert("Selecciona una casella per atacar!");
+        }
+
+
+    } else {
+        alert("NO és el teu torn, espera.");
+    }
+
+}
+
+/*IA*/
+/* Funció que genera l'atac de la IA cap al tauler del jugador*/
+function atacarIA() {
+    let coord = AI.pensarCoordenades();
+    
+    //ataco
+    let estatAtac = taulerJugador.atacar(coord.f, coord.c);
+    taulerJugador.caselles[coord.f][coord.c].jugada = true;
+
+    //si he tocat (direcció correcta)
+    if(estatAtac != false) {
+
+        //si és el primer cop que toco, reinicio les direccions i em guardo la casella
+        if(AI.memoria.length <= 0) {
+            AI.generarMemoriaIA(coord.f, coord.c);
+        }
+
+        AI.actualitzarMemoriaIA(coord.f,coord.c);
+
+        //si he enfonsat el vaixell, borro la memòria i reinicio les direccions
+        if(estatAtac != true) {
+            AI.esborrarMemoriaIA();
+        }
+
+        //actualitzo la part visual
+        actualitzarEnfonsat(estatAtac);
+
+        if(!taulerJugador.derrota()) {
+            setTimeout(atacarIA, 2000); //setTimeout per simular que la IA pensa
+        } else {
+            finalitzarPartida("Màquina");
+        }
+
+
+    } else {
+        //si he tocat aigua, però encara no he enfonsat, canvio de direcció
+        if(AI.memoria.length > 0) {
+            AI.canviDireccioIA();
+        }
+        torn = true;
+    }
+
+    console.log("ATACO");
+
+    //canvio estat de la casella i actualitzo la part visual
+    let idCasella = generarIdCasella(taulerJugador, coord.f, coord.c);
+    actualitzaCasella(idCasella, taulerJugador, true);
+}
+
+
+/*Funció que marca visaulment que un vaixell del tauler del jugardor ha estat enfonsat*/
+function actualitzarEnfonsat(vaixell) {
+    if(vaixell.enfonsat == true) {
+        let idIcona = vaixell.nom+"_icona";
+
+        let iconaVaixell = document.getElementById(idIcona);
+
+        iconaVaixell.textContent = "💥";
+    }
+}
+
+/*Funció que és cridada quan algú guanya la partida. Crida a una altra funció per eliminar els events.*/
+function finalitzarPartida(guanyador="") {
+    alert("S'ha acabat la partida. Ha guanyat: "+ guanyador);
+
+    let resultat = document.createElement("p");
+    resultat.textContent = "Ha guanyat: "+ guanyador;
+    document.body.insertBefore(resultat, document.body.firstChild);
+
+    eliminarEventsFinals();
+}
+
+/*Funció que elimina els listeners dels events de la partida en la fase d'atac*/
+function eliminarEventsFinals() {
+    let botoAtacar = document.getElementById("atacar_btn");
+    botoAtacar.removeEventListener("click", atacarHandler);
+
+    let caselles = document.querySelectorAll("#tauler1 .casella");
+    for(let casella of caselles) {
+        casella.removeEventListener("click", seleccionaCasella);
+    }
 }
 
 

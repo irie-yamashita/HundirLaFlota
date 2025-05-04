@@ -29,17 +29,22 @@ export class Tauler {
     atacar(f, c) {
         if(this.#caselles[f][c].aigua == true) {
             return false //no he tocat
-        }
-
-        else {
+        } else {
             this.#caselles[f][c].tocat = true;
+
             let idVaixell = this.#caselles[f][c].nomVaixell;
             
-            //comprovo si està ja enfonsat
+            //comprovo si està enfonsat
             let vaixellTriat = this.#vaixells.find((vaixell) => vaixell.id == idVaixell);
             vaixellTriat.enfonsat = this.vaixellEnfonsat(vaixellTriat);
 
-            return vaixellTriat;
+            if(vaixellTriat.enfonsat) {
+                return vaixellTriat;
+            } else {
+                return true;
+            }
+
+
         }
 
     }
