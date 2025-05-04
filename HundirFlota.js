@@ -1,23 +1,17 @@
 import { Tauler } from "./model/Tauler.js";
 import { Vaixell } from "./model/Vaixell.js";
+import { IA } from "./model/IA.js";
 
 //Declaració variables globals
 let vaixellUsu = "";
-let direccioUsu = 'R'; //per defecte poso que la direcció sigui horitzontal (right)
+let direccioUsu = 0; //per defecte poso que la direcció sigui horitzontal (right)
 let casellaUsu;
 
 let torn = true;
-let fiPartida = false;
 
-let taulerRival;
+let taulerIA;
 let taulerJugador;
-
-let IA = {
-    "direccions": ['U', 'D', 'L', 'R'],
-    "memoria": [],
-    "casellaInicial": []
-}
-
+let AI;
 
 const vaixellsJSON = `[
 { "name": "Portaaviones", "size": 5 },
@@ -33,7 +27,7 @@ let vaixellsJoc = cargarJson(vaixellsJSON);
 
 //FUNCIONS
 
-/*PART 1: GENERACIÓ TAULELLS*/
+/*PART 1: GENERACIÓ TAULERS*/
 /*Funció que crea divs per cada casella d'un tauler (matriu).*/
 function crearTauler(tauler, id, interactuable = false) {
     let divTauler = document.getElementById(id);
@@ -52,7 +46,7 @@ function crearTauler(tauler, id, interactuable = false) {
 
             if (interactuable) {
                 //listener per col·locar els vaixells del jugador
-                columna.addEventListener("click", colocacioVaixellHandler);
+                columna.addEventListener("click", gestionarClickCasella);
                 columna.classList.add("aigua");
             }
 
@@ -74,13 +68,15 @@ function actualitzarTauler(tauler) {
 }
 
 /*Funció que consulta l'objecte tauler i actualitza la casella amb l'id passat per paràmetre.*/
-function actualitzaCasella(id, tauler) {
+function actualitzaCasella(id, tauler, jugador = false) {
 
     let casella = document.getElementById(id);
-    let coord = extreureCoordenades(id);
 
-    let aigua = tauler.caselles[coord.x][coord.y].aigua;
-    let jugada = tauler.caselles[coord.x][coord.y].jugada;
+    let coord = extreureCoordenades(id);
+    //casella.textContent = `[${coord.f},${coord.c}]`;
+
+    let aigua = tauler.caselles[coord.f][coord.c].aigua;
+    let jugada = tauler.caselles[coord.f][coord.c].jugada;
     if (aigua) {
         casella.setAttribute("class", "casella aigua");
     } else {
@@ -89,11 +85,11 @@ function actualitzaCasella(id, tauler) {
         casella.classList.remove("aigua");
         casella.classList.add("vaixell");
 
-        let nom = tauler.caselles[coord.x][coord.y].nomVaixell;
+        let nom = tauler.caselles[coord.f][coord.c].nomVaixell;
         casella.classList.add(nom[0]);
 
 
-        let tocat = tauler.caselles[coord.x][coord.y].tocat;
+        let tocat = tauler.caselles[coord.f][coord.c].tocat;
 
         if (tocat) {
             casella.classList.add("tocat");
@@ -101,13 +97,14 @@ function actualitzaCasella(id, tauler) {
 
     }
 
-    //si la casella ha estat jugada per la IA, faig canvi visual
-    if (jugada) {
+    //si és del tauler del jugador canvio la part visual
+    if(jugador == true) {
         let mascara = document.createElement("div");
         mascara.setAttribute("class", "mascara");
 
         casella.appendChild(mascara);
     }
+
 }
 
 
@@ -116,6 +113,7 @@ function actualitzaCasella(id, tauler) {
 function resetTauler(tauler) {
 
     tauler.reiniciar();
+    tauler.vaixells = [];
 
     for (let f = 0; f < tauler.tamany[0]; f++) {
         for (let c = 0; c < tauler.tamany[1]; c++) {
@@ -127,88 +125,67 @@ function resetTauler(tauler) {
 }
 
 
-/*Funció que genera els botons inicials (amb listeners) del tauler*/
+//MAIN
 function generarBotons() {
     let contenidorV = document.getElementById("botonsVaixells");
 
     /* Botons dels vaixells */
     vaixellsJoc.forEach(vaixell => {
-        let divVaixell = document.createElement("div");
-        let boto = document.createElement("button");
-        let icona = document.createElement("div");
+        let divVaixell = crearElement("div", "", "", ["vaixell_container"], contenidorV);
+        crearElement("div", "", vaixell.name+"_icona", [vaixell.name[0], "vaixell_icona"], divVaixell);
+        let boto = crearElement("button", vaixell.name, vaixell.name+"_btn", ["vaixellsBtn"], divVaixell);
 
-        boto.id = vaixell.name + "_btn";
-        boto.classList.add("vaixellsBtn");
-        boto.textContent = vaixell.name;
-
-        icona.classList.add(vaixell.name[0]);
-        icona.classList.add("vaixell_icona");
-        icona.id = vaixell.name+"_icona";
-
-        divVaixell.classList.add("vaixell_container");
 
         //listener per detectar quin vaixell col·locar
-        boto.addEventListener("click", function (event) {
+        boto.addEventListener("click", gestionarClickVaixell);
 
-            //trobo el vaixell assignat al botó mirant si l'id és igual
-            vaixellUsu = vaixellsJoc.find((element) => element.name == event.target.id.replace("_btn", ""));
-
-            //drag & drop
-            crearRendVaixell(event);
-
-        });
-
-        divVaixell.appendChild(icona);
-        divVaixell.appendChild(boto);
-        contenidorV.appendChild(divVaixell);
     });
 
     /* Botons de direccions */
     let botoHor = document.getElementById("H_btn");
     let botoVer = document.getElementById("V_btn");
 
-    botoHor.addEventListener("click", onClickDireccio);
-    botoVer.addEventListener("click", onClickDireccio);
+    botoHor.addEventListener("click", gestionarClickDireccio);
+    botoVer.addEventListener("click", gestionarClickDireccio);
 
 
     /* Botó per reiniciar */
     let botoReset = document.getElementById("reset_btn");
-    botoReset.addEventListener("click", onReiniciarColocacio);
+    botoReset.addEventListener("click", gestionarReset);
 
 }
 
-//MAIN
 function init() {
-    let jugar_btn = document.getElementById("jugar_btn");
-    jugar_btn.style.display = "none";
+    //Carrego dades dels vaixells
+    let vaixellsJoc = cargarJson(vaixellsJSON);
 
-    //TAULER 01: automàtic
-    taulerRival = new Tauler("j1", [10, 10]);
+    //TAULER 01: IA
+    taulerIA = new Tauler("j1", [10, 10]);
 
     //genero un vaixell de cada tipus
     for (let dades of vaixellsJoc) {
-
         let id = dades.name[0]; //l'id és la primera lletra
         let vaixell = new Vaixell(id, dades.name, dades.size);
-        taulerRival.afegirVaixell(vaixell);
+        taulerIA.afegirVaixell(vaixell);
     }
 
-    //crido mètode per posicionar els vaixells
-    taulerRival.posicionarVaixells();
+    taulerIA.colocarVaixellsAleatoris(); //crido mètode per posicionar els vaixells
 
-    //mostro el tauler
-    crearTauler(taulerRival, "tauler1", false);
+    //mostro el tauler (part visual)
+    crearTauler(taulerIA, "tauler1", false);
 
 
     //TAULER 02: jugador
     //creo el taulell i botons
     taulerJugador = new Tauler("j2", [10, 10]);
-    generarBotons();
+    AI = new IA (taulerIA.tamany[0]);
+
+    console.log(AI);
 
     //mostro el tauler
     crearTauler(taulerJugador, "tauler2", true);
     actualitzarTauler(taulerJugador);
-
+    generarBotons();
 
 
 } init();
@@ -216,34 +193,88 @@ function init() {
 
 
 /*PART 2: COL·LOCACIÓ*/
-
 //EVENT HANDLERS
+
+/*Funció que controla la col·locació de vaixells en les caselles del taulell. 
+    - És cridada quan fas 'click' a una casella del jugador durant la col·locació de vaixells inicials
+*/
+function gestionarClickCasella() {
+
+    if (vaixellUsu != "") {
+        //extrec les coordenades -> x0y4 (id de la casella)
+        let idCasella = this.id; //this és element que té el listener
+        let coord = extreureCoordenades(idCasella);
+        let f = parseInt(coord.f); let c = parseInt(coord.c);
+
+        //Creo el vaixell i el provo de col·locar
+        let vaixell = new Vaixell(vaixellUsu.name[0], vaixellUsu.name, vaixellUsu.size);
+        let colocat = taulerJugador.colocarVaixell(vaixell, f, c, direccioUsu); //em retorna true o false
+
+        //comprovo si el vaixell s'ha col·locat correctament
+        if (!colocat) {
+            alert("El vaixell no es pot col·locar aquí. Recorda que els vaixells no es poden tocar!");
+        } else {
+            //desactivo el botó i poso en blanc el vaixell seleccionat
+            document.getElementById(vaixellUsu.name + "_btn").disabled = true;
+            vaixellUsu = "";
+
+            //afegeixo el vaixell a la llista del taulell del jugador
+            taulerJugador.afegirVaixell(vaixell);//!!
+            actualitzarTauler(taulerJugador);
+
+            //drag&drop
+            eliminarRendVaixell();
+
+            //si col·loco tots els vaixells -> dono opció de començar a jugar
+            if (taulerJugador.vaixells.length == vaixellsJoc.length) {
+                let contenidorBotons = document.getElementById("botonsDireccions");
+                let jugar_btn = crearElement("button", "JUGAR", "jugar_btn", [], contenidorBotons);
+                jugar_btn.addEventListener("click", gestionarClickJugar);
+            }
+
+        }
+
+    } else {
+        alert("Selecciona un vaixell!");
+    }
+}
+
+/*Funció que agafa l'id del vaixell seleccionat i el guarda a la variable vaixellUsu;
+ - És cridada quan fas 'click' als botons de vaixells durant el posicionament d'aquests.
+*/
+function gestionarClickVaixell(event) {
+    //trobo el vaixell assignat al botó mirant si l'id és igual
+    vaixellUsu = vaixellsJoc.find((element) => element.name == event.target.id.replace("_btn", ""));
+
+    //drag & drop
+    crearRendVaixell(event);
+}
+
 
 /*Funció que agafa l'id del botó i guarda la direcció corresponent.
  - És cridada quan fas 'click' als botons H i D.
 */
-function onClickDireccio(event) {
+function gestionarClickDireccio(event) {
     let rendVaixell = document.getElementById("rendVaixell");
-    //d'esquerra a dreta i de dalt a baix
 
+    //d'esquerra a dreta i de dalt a baix
     if (rendVaixell) {
-        if (event.target.id[0] == "V") {
-            rendVaixell.style.flexDirection = "column";
-            direccioUsu = 'D';
-        } else {
+        if (event.target.id[0] == "H") {
             rendVaixell.style.flexDirection = "row";
-            direccioUsu = 'R';
+            direccioUsu = 0;
+        } else {
+            rendVaixell.style.flexDirection = "column";
+            direccioUsu = 1;
         }
     }
 
     event.stopPropagation();
-
 }
 
 /*Funció que reinicia la col·locació dels vaixells
  - És cridada quan fas 'click' al botó de RESET
 */
-function onReiniciarColocacio() {
+function gestionarReset() {
     //Reinicio tauler
     resetTauler(taulerJugador);
 
@@ -256,7 +287,10 @@ function onReiniciarColocacio() {
 
     resetTauler(taulerJugador);
     let botoJugar = document.getElementById("jugar_btn");
-    botoJugar.style.display = "none";
+    if(botoJugar) {
+        botoJugar.remove();
+    }
+
 }
 
 /*DRAG & DROP*/
@@ -274,21 +308,15 @@ function crearRendVaixell(event) {
     }
 
     //creo el div on anirà la plantilla/previsualització
-    rendVaixell = document.createElement("div");
-    rendVaixell.id = "rendVaixell";
-    rendVaixell.classList.add("rendVaixell");
+    rendVaixell = crearElement("div", "", "rendVaixell", ["rendVaixell"], contenidor);
 
     //canvio display-flex segons la direccio del vaixell 
-    direccioUsu == "R" ? rendVaixell.style.flexDirection = "row" : rendVaixell.style.flexDirection = "column"; //(condicional ternari)
+    direccioUsu == 0 ? rendVaixell.style.flexDirection = "row" : rendVaixell.style.flexDirection = "column"; //(condicional ternari)
 
     //creo la plantilla del vaixell
     for (let i = 0; i < vaixellUsu.size; i++) {
-        let casella = document.createElement("div");
-        casella.classList.add("casella");
-        rendVaixell.appendChild(casella);
+        crearElement("div", "", "", ["casella"], rendVaixell);
     }
-
-    contenidor.appendChild(rendVaixell);
 
     //col·loco la plantilla del vaixell en la posició del ratolí
     rendVaixell.style.left = event.clientX + "px";
@@ -318,105 +346,60 @@ function eliminarRendVaixell() {
     document.removeEventListener('mousemove', onMoureRendVaixell); //trec listener
 }
 
-
-
-/*Funció que controla la col·locació de vaixells en les caselles del taulell. 
-    - És cridada quan fas 'click' a una casella del jugador durant la col·locació de vaixells inicials
-*/
-function colocacioVaixellHandler(event) {
-    if (vaixellUsu != "") {
-        //extrec les coordenades -> x0y4 (id de la casella)
-        let idCasella = event.target.id;
-        let coord = extreureCoordenades(idCasella);
-
-        let x = parseInt(coord.x);
-        let y = parseInt(coord.y);
-
-
-        //Creo el vaixell i el provo de col·locar
-        let vaixell = new Vaixell(vaixellUsu.name[0], vaixellUsu.name, vaixellUsu.size);
-        let colocat = taulerJugador.colocarVaixell(vaixell, x, y, direccioUsu);
-
-        //comprovo si el vaixell s'ha col·locat correctament
-        if (!colocat) {
-            //missatge d'error
-            alert("El vaixell no es pot col·locar aquí.");
-        } else {
-            //desactivo el botó i poso en blanc el vaixell seleccionat
-            document.getElementById(vaixellUsu.name + "_btn").disabled = true;
-            vaixellUsu = "";
-
-            //afegeixo el vaixell a la llista del taulell del jugador
-            taulerJugador.afegirVaixell(vaixell);//!!
-            actualitzarTauler(taulerJugador);
-
-            //drag&drop
-            eliminarRendVaixell();
-
-            //si col·loco tots els vaixells -> dono opció de començar a jugar
-            if (taulerJugador.vaixells.length == vaixellsJoc.length) {
-                let jugar_btn = document.getElementById("jugar_btn");
-                jugar_btn.style.display = "inline";
-                jugar_btn.addEventListener("click", iniciarJoc);
-
-            }
-
-        }
-
-    } else {
-        alert("Selecciona un vaixell");
-    }
-}
-
 /*Funció que amaga tots els botons de col·locació de vaixells i inicia el joc (atac)
     - És cridada quan fas 'click' al botó de JUGAR
 */
-function iniciarJoc() {
-    //amago el botó de jugar, reset i direccions
-    let botonsDesactivar = document.querySelectorAll("#botonsDireccions button");
-    botonsDesactivar.forEach((boto) => boto.style.display = "none");
+function gestionarClickJugar() {
 
-    //elimino events
-    let botonsVaixells = document.querySelectorAll("#botonsVaixells button");
-    let casellesJugador = document.querySelectorAll("#j2 .casella");
+    //elimino listeners
+    document.getElementById("reset_btn").removeEventListener("click", gestionarReset);
+    document.getElementById("H_btn").removeEventListener("click", gestionarClickDireccio);
+    document.getElementById("V_btn").removeEventListener("click", gestionarClickDireccio);
 
-    botonsVaixells.forEach((boto) => boto.removeEventListener("click", crearRendVaixell));
-    casellesJugador.forEach((casella) => casella.removeEventListener("click", colocacioVaixellHandler));
+
+    //amago els botons
+    document.querySelectorAll("#botonsDireccions button").forEach((boto) => boto.style.display = "none");
+
+    document.getElementById("textVaixells").textContent = "Estat dels teus vaixells: ";
+
+    //elimino events (dels vaixells i caselles)
+    document.querySelectorAll("#botonsVaixells button").forEach((boto) => {
+        boto.removeEventListener("click", gestionarClickVaixell);
+        boto.style.all = "unset";
+    });
+    document.querySelectorAll("#j2 .casella").forEach((casella) => casella.removeEventListener("click", gestionarClickCasella));
 
     //activo els de joc
-    activarEventJoc();
+    activarEventsAtac();
 
 }
 
 
-
 /*PART 3: ATAC*/
-
 /* Funció activa els events del joc referents a l'atac*/
-function activarEventJoc() {
-    let casellesRivals = document.querySelectorAll("#j1 .casella");
+function activarEventsAtac() {
 
-    for (let casella of casellesRivals) {
-        casella.addEventListener('click', seleccionaCasella);
-    }
+    //Afegeixo listeners a les caselles del tauler IA
+    document.querySelectorAll("#j1 .casella").forEach((casella) =>  casella.addEventListener('click', gestionarClickCasellaIA));
 
-
-    let botoAtacar = document.getElementById("atacar_btn");
-    botoAtacar.addEventListener("click", atacarHandler);
+    //Afegeixo listener al botó d'atac
+    document.getElementById("atacar_btn").addEventListener("click", gestionarAtac);
 
 }
 
 /* Funció que guarda quina és l'id de la casella seleccionada i la destaca.
     - És cridada quan fas 'click' a una casella del tauler de la IA
 */
-function seleccionaCasella(event) {
+function gestionarClickCasellaIA(event) {
+
+    //trec el outline de la casella anterior
     let casellaAnterior = document.getElementById(casellaUsu);
     if (casellaAnterior) {
         casellaAnterior.classList.remove("seleccionat");
     }
 
     //guardo l'id de la casella seleccionada
-    casellaUsu = event.target.id;
+    casellaUsu = this.id;
 
     //li canvio l'estil per marcar que està selecionada
     let casellaSeleccionada = document.getElementById(casellaUsu);
@@ -426,7 +409,7 @@ function seleccionaCasella(event) {
 /* Funció que controla els atacs de l'USUARI.
     - És cridada quan fas 'click' al botó d'ATACAR
 */
-function atacarHandler() {
+function gestionarAtac() {
 
     if (torn) {
 
@@ -434,30 +417,27 @@ function atacarHandler() {
         if (casellaUsu) {
             //elimino event
             let casella = document.getElementById(casellaUsu);
-            casella.removeEventListener("click", seleccionaCasella);
+            casella.removeEventListener("click", gestionarClickCasellaIA);
 
             //extrec les coordenades a partir del id del div
             let coord = extreureCoordenades(casellaUsu);
 
             //ataco
-            let tocat = taulerRival.atacar(coord.x, coord.y);
+            let estatAtac = taulerIA.atacar(coord.f, coord.c);
 
             //mostro casella (visual)
-            actualitzaCasella(casellaUsu, taulerRival);
+            actualitzaCasella(casellaUsu, taulerIA);
             casellaUsu = "";
 
             //si usuari no ha tocat, canvi de torn, li toca a la màquina
-            if (!tocat) {
+            if (estatAtac == false) {
                 torn = false;
                 atacarIA();
-            } else {
-                if(tocat.enfonsat == true){
-                    alert("Tocat i enfonsat!");
-                }
+            } else if (estatAtac != true) {
+                alert("Tocat i enfonsat!");
             }
 
-
-            if(taulerRival.derrota()) {
+            if(taulerIA.derrota()) {
                 finalitzarPartida("Usuari");
             }
 
@@ -472,42 +452,35 @@ function atacarHandler() {
 
 }
 
-
 /*IA*/
-
 /* Funció que genera l'atac de la IA cap al tauler del jugador*/
 function atacarIA() {
-    //genero coordenades
-    let coordenadesIA = generarCoordenadesIA();
-    let x = coordenadesIA.x;
-    let y = coordenadesIA.y;
-
+    let coord = AI.pensarCoordenades();
+    
     //ataco
-    let vaixellTocat = taulerJugador.atacar(x, y);
-    taulerJugador.caselles[x][y].jugada = true;
+    let estatAtac = taulerJugador.atacar(coord.f, coord.c);
+    taulerJugador.caselles[coord.f][coord.c].jugada = true;
 
     //si he tocat (direcció correcta)
-    if(vaixellTocat) {
-        //console.log("en principi he tocat", vaixellTocat);
+    if(estatAtac != false) {
 
         //si és el primer cop que toco, reinicio les direccions i em guardo la casella
-        if(IA.memoria.length <= 0) {
-            generarMemoriaIA(x, y);
+        if(AI.memoria.length <= 0) {
+            AI.generarMemoriaIA(coord.f, coord.c);
         }
 
-        actualitzarMemoriaIA(x,y);
+        AI.actualitzarMemoriaIA(coord.f,coord.c);
 
         //si he enfonsat el vaixell, borro la memòria i reinicio les direccions
-        if(taulerJugador.vaixellEnfonsat(vaixellTocat)) {
-            esborrarMemoriaIA();
+        if(estatAtac != true) {
+            AI.esborrarMemoriaIA();
         }
 
         //actualitzo la part visual
-        actualitzarEnfonsat(vaixellTocat);
-        actualitzaCasella(generarIdCasella(taulerJugador, x, y), taulerJugador);
+        actualitzarEnfonsat(estatAtac);
 
         if(!taulerJugador.derrota()) {
-            setTimeout(atacarIA, 2000); //setTimeout per simular que la IA pensa
+            setTimeout(atacarIA, 1000); //setTimeout per simular que la IA pensa
         } else {
             finalitzarPartida("Màquina");
         }
@@ -515,122 +488,33 @@ function atacarIA() {
 
     } else {
         //si he tocat aigua, però encara no he enfonsat, canvio de direcció
-        if(IA.memoria.length > 0) {
-            canviDireccioIA();
+        if(AI.memoria.length > 0) {
+            AI.canviDireccioIA();
         }
         torn = true;
     }
 
+    console.log("ATACO");
+
     //canvio estat de la casella i actualitzo la part visual
-    let idCasella = generarIdCasella(taulerJugador, x, y);
-    actualitzaCasella(idCasella, taulerJugador);
-}
-
-/*Funció que genera coordenades aleatòries o intel·ligents segons si s'ha tocat un vaixell o no*/
-function generarCoordenadesIA() {
-    let x; let y;
-    //ataco fins que seleccioni una casella aigua o guanyi
-    let correcte = false;
-    do {
-        //si l'anterior ha estat aigua, genero coordenades de manera aleatòria
-        if(IA.memoria.length == 0) {
-            x = generarNumRandom(taulerJugador.tamany[0]);
-            y = generarNumRandom(taulerJugador.tamany[1]);
-
-        } else { //si ha estat tocat, ataco a una coordenada propera
-
-            let coordenadesVeines = generarCoordenadaVeina();
-            x = coordenadesVeines[0];
-            y = coordenadesVeines[1];
-
-            //console.log(coordenadesVeines, IA.direccions, IA.memoria);
-            
-        }
-
-        //comprovo si és una casella que ja he atacat
-        if(!taulerJugador.caselles[x][y].jugada) {
-            correcte = true;
-        } else if(taulerJugador.caselles[x][y].jugada && IA.memoria.length > 0){
-            canviDireccioIA();
-        }
-        
-    } while (!correcte) //atrapo fins que generi unes coordenades que no hagi atacat anteriorment
-
-    return {"x": x, "y": y}
-
-}
-
-/*Funció que activa la memòria de la màquina quan toca un vaixell*/
-function generarMemoriaIA(x, y) {
-    IA.direccions = ['U', 'D', 'L', 'R'];
-    IA.casellaInicial[0] = x;
-    IA.casellaInicial[1] = y;
-}
-
-/*Funció que actualitza la memòria de la màquina*/
-function actualitzarMemoriaIA(x, y) {
-    IA.memoria[0] = x;
-    IA.memoria[1] = y;
-}
-
-/*Funció que canvia la direcció de la màquina i torna a buscar des del punt inicial on ha trobat el primer tocat*/
-function canviDireccioIA() {
-    IA.direccions.shift();
-    IA.memoria[0] = IA.casellaInicial[0];
-    IA.memoria[1] = IA.casellaInicial[1];
-}
-
-/*Funció que esborra la memòria de la màquina un cop ha enfonsat el vaixell*/
-function esborrarMemoriaIA() {
-    IA.memoria = [];
-    IA.casellaInicial = [];
-    IA.direccions = ['U', 'D', 'L', 'R'];
-}
-
-/*Funció retorna la casella més propera segons una direcció donada*/
-function generarCoordenadaVeina() {
-    let correcte;
-    let nX;
-    let nY;
-
-    do {
-        nX = IA.memoria[0];
-        nY = IA.memoria[1];
-        correcte = true;
-
-        let direccio = IA.direccions[0];
-        switch (direccio) {
-            case 'U':
-                nX--;
-                break;
-            case 'D':
-                nX++;
-                break;
-            case 'L':
-                nY--;
-                break;
-            case 'R':
-                nY++;
-                break;
-        } 
-    
-        //si toco algun borde, vol dir que he d'anar cap a l'altra direcció
-        if(nX < 0 || nX > taulerJugador.tamany[0]-1 || nY < 0 || nY > taulerJugador.tamany[0]-1) {
-            canviDireccioIA();
-            correcte = false;
-        }
-
-    } while(!correcte) //atrapo fins obtenir una casella que existeixi
-
-    return [nX, nY];
+    let idCasella = generarIdCasella(taulerJugador, coord.f, coord.c);
+    actualitzaCasella(idCasella, taulerJugador, true);
 }
 
 
+/*Funció que marca visaulment que un vaixell del tauler del jugardor ha estat enfonsat*/
+function actualitzarEnfonsat(vaixell) {
+    if(vaixell.enfonsat == true) {
+        let idIcona = vaixell.nom+"_icona";
 
+        let iconaVaixell = document.getElementById(idIcona);
+
+        iconaVaixell.textContent = "💥";
+    }
+}
 
 /*Funció que és cridada quan algú guanya la partida. Crida a una altra funció per eliminar els events.*/
 function finalitzarPartida(guanyador="") {
-    fiPartida = true;
     alert("S'ha acabat la partida. Ha guanyat: "+ guanyador);
 
     let resultat = document.createElement("p");
@@ -645,26 +529,11 @@ function eliminarEventsFinals() {
     let botoAtacar = document.getElementById("atacar_btn");
     botoAtacar.removeEventListener("click", atacarHandler);
 
-    let caselles = document.querySelectorAll("#tauler1 .casella");
+    let caselles = document.querySelectorAll(".casella");
     for(let casella of caselles) {
         casella.removeEventListener("click", seleccionaCasella);
     }
 }
-
-/*Funció que marca visaulment que un vaixell del tauler del jugardor ha estat enfonsat*/
-function actualitzarEnfonsat(vaixell) {
-    if(vaixell.enfonsat == true) {
-        let idIcona = vaixell.nom+"_icona";
-
-        let iconaVaixell = document.getElementById(idIcona);
-
-        iconaVaixell.textContent = "💥";
-    }
-}
-
-
-
-
 
 
 
@@ -672,7 +541,7 @@ function actualitzarEnfonsat(vaixell) {
 function extreureCoordenades(id) {
     let elements = id.split("-"); //j2-4-9   (nom-x-y)
 
-    return { "x": elements[1], "y": elements[2] };
+    return { "f": elements[1], "c": elements[2] };
 }
 
 function generarIdCasella(tauler, x, y) {
@@ -695,3 +564,20 @@ function cargarJson(json) {
     return dadesVaixells
 }
 
+
+function crearElement(tipus, contingut, id, classes, pare) {
+    let element = document.createElement(tipus);
+
+    if(id != "")
+        element.id = id;
+
+    if(contingut != "")
+        element.textContent = contingut;
+
+    if(classes.length != 0)
+        classes.forEach((classe) => element.classList.add(classe));
+
+
+    pare.appendChild(element);
+    return element;
+}

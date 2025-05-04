@@ -30,5 +30,10 @@ export class Vaixell {
         this.#coordenades.push(coordenada);
     }
 
+    resetVaixell() {
+        this.#coordenades = [];
+        this.#enfonsat = false;
+    }
+
 
 }

@@ -13,7 +13,7 @@ export class Tauler {
 
         for (let f = 0; f < this.#tamany[0]; f++) { //recorro per files
 
-            let fila = []
+            let fila = [];
 
             for (let c = 0; c < this.#tamany[1]; c++) {  //recorro per columnes
                 fila[c] = new Casella();
@@ -26,33 +26,35 @@ export class Tauler {
 
     }
 
-    atacar(x, y) {
-        if(this.#caselles[x][y].aigua == true) {
+    atacar(f, c) {
+        if(this.#caselles[f][c].aigua == true) {
             return false //no he tocat
-        }
+        } else {
+            this.#caselles[f][c].tocat = true;
 
-        else {
-            this.#caselles[x][y].tocat = true;
-            let idVaixell = this.#caselles[x][y].nomVaixell;
+            let idVaixell = this.#caselles[f][c].nomVaixell;
             
-            //comprovo si està ja enfonsat
+            //comprovo si està enfonsat
             let vaixellTriat = this.#vaixells.find((vaixell) => vaixell.id == idVaixell);
             vaixellTriat.enfonsat = this.vaixellEnfonsat(vaixellTriat);
 
-            return vaixellTriat;
+            if(vaixellTriat.enfonsat) {
+                return vaixellTriat;
+            } else {
+                return true;
+            }
+
+
         }
 
     }
    
-
-
     afegirVaixell(vaixell) {
         this.#vaixells.push(vaixell);
     }
 
-    posicionarVaixells() {
-        const direccions = ['U', 'D', 'L', 'R'];
-
+    /*Mètode que coloca els vaixells de manera aleatòria amb un màxim d'intents.*/
+    colocarVaixellsAleatoris() {
         let nVaixells;
         let maxIntents = 5;
         let intents;
@@ -69,15 +71,14 @@ export class Tauler {
                 //per cada casella que necessita ell vaixell
                 do {    
                     //genero coordenades i direcció aleatòriament
-                    let x = generarNumRandom(this.#tamany[0]);
-                    let y = generarNumRandom(this.#tamany[1]);
-                    let direccio = direccions[generarNumRandom(direccions.length)];
+                    let f = generarNumRandom(this.#tamany[0]);
+                    let c = generarNumRandom(this.#tamany[1]);
+                    let direccio = generarNumRandom(2);
         
-                    //console.log(intents,vaixell.id, vaixell.mida, direccio, x, y);
-        
+                    console.log(intents,vaixell.id, vaixell.mida, direccio, f, c);
         
                     //provo de col·locar el vaixell
-                    if(this.colocarVaixell(vaixell, x, y, direccio)) {
+                    if(this.colocarVaixell(vaixell, f, c, direccio)) {
                         nVaixells++;
                         colocat = true;
                     } else { //no hi ha espai
@@ -90,21 +91,9 @@ export class Tauler {
 
             if(nVaixells != this.#vaixells.length) {
                 console.log("No s'ha pogut col·locar tots els vaixells. Tornem a generar-los");
-
                 this.reiniciar();
-/*                 for (let f = 0; f < this.#tamany[0]; f++) {
-
-                    for(let c = 0; c < this.#caselles.length; c++ ) {
-                        if(this.#caselles[f][c].aigua == false){
-                            this.#caselles[f][c].aigua = true;
-                            this.#caselles[f][c].nomVaixell = '';
-                        }
-                    }
-
-                } */
             }
     
-
         } while (nVaixells != this.#vaixells.length)
         
     }
@@ -114,60 +103,42 @@ export class Tauler {
         Mètode que coloca un vaixell en les coordenades i direccio indicades
         @return true/false segons si s'ha pogut col·locar o no el vaixell
     */
-    colocarVaixell(vaixell, x, y, direccio){
+    colocarVaixell(vaixell, f, c, direccio){
 
         //comprovo que hi hagi espai pel vaixell
-        if(this.#hiHaEspai(x, y, direccio, vaixell.mida)) { 
+        let coordenadesVaixell = this.#hiHaEspai(f, c, direccio, vaixell.mida);
+        if(coordenadesVaixell) { 
 
-            //modifico estat de la casella
-            for (let i = 0; i < vaixell.mida; i++) {
-                let nX = x;
-                let nY = y;
+            //modifico l'estat de les caselles
+            for (let coordenada of coordenadesVaixell) {
+                let cN = coordenada[0]; let fN = coordenada[1];
 
+                this.#caselles[cN][fN].aigua = false;
+                this.#caselles[cN][fN].nomVaixell = vaixell.id;      
 
-                switch (direccio) {
-                    case 'U':
-                        nX = x - i;
-                        break;
-                    case 'D':
-                        nX = x + i;
-                        break;
-                    case 'L':
-                        nY = y - i;
-                        break;
-                    case 'R':
-                        nY = y +i;
-                        break;
-                } 
-                this.#caselles[nX][nY].aigua = false;
-                this.#caselles[nX][nY].nomVaixell = vaixell.id;      
-
-                vaixell.afegirCoordenada([nX, nY]);
-    
+                vaixell.afegirCoordenada([cN, fN]);
             }
             return true //vaixell colocat
 
         } else {
             return false
         }
-        
 
     }
 
     reiniciar() {
-        this.#vaixells = [];
 
+        //reinicio les caselles
         for (let f = 0; f < this.#tamany[0]; f++) {
 
             for(let c = 0; c < this.#caselles.length; c++ ) {
-                if(this.#caselles[f][c].aigua == false){
-                    this.#caselles[f][c].aigua = true;
-                    this.#caselles[f][c].nomVaixell = '';
-                }
+                this.#caselles[f][c].resetCasella();
             }
 
         }
 
+        //reinicio vaixells
+        this.vaixells.forEach((vaixell) => vaixell.resetVaixell());
     }
 
     derrota() {
@@ -183,7 +154,6 @@ export class Tauler {
     //mètodes privats (helpers)
 
     vaixellEnfonsat (vaixell) {
-        let enfonsat = true;
 
         //comprovo que el vaixell no estigui enfonsat
         for(let coordenada of vaixell.coordenades) {
@@ -196,48 +166,77 @@ export class Tauler {
         return true;
     }
 
-    #hiHaEspai(x, y, dir, q) {
-        let xN = x;
-        let yN = y;
-        let i = 0;
-        let correcte = true;
+    /*Mètode que valida si es pot col·locar un vaixell. Si es pot, retorna les coordenades. Si no es pot, retorna null.*/
+    #hiHaEspai(f, c, dir, quantitat) {
+        let novesCoordenades = [];
+        let fN = f; let cN = c;
 
-        do {
+        //comprovo per cada casella que ocuparia el vaixell (tamany)
+        for(let i = 0; i < quantitat; i++) {
 
-            switch (dir) {
-                case 'U':
-                    xN = x - i;
-                    break;
-                case 'D':
-                    xN = x + i;
-                    break;
-                case 'L':
-                    yN = y - i;
-                    break;
-                case 'R':
-                    yN = y +i;
-                    break;
-            }
+            //genero noves coordenades
+            dir == 0 ? cN = c + i : fN = f + i; //(si és dir 0 -> horitzontal (c+i), si és dir 1 -> vertical (f+i)
 
-            if(xN > this.#tamany[0]-1 || xN < 0 || yN < 0 || yN > this.#tamany[1]-1) { //-1 perquè comencem per [0]
-                correcte = false;
+            //comprovo que no estigui fora del tauler
+            if(fN > this.#tamany[0]-1 || fN < 0 || cN < 0 || cN > this.#tamany[1]-1) { //-1 perquè comencem per [0]
                 console.log('Fora del tauler!');
-            } else if (this.#caselles[xN][yN].aigua == false){
-                console.log('Casella ocupada!',xN, yN);
-                correcte = false;
+                return null;
+            } else if (this.#caselles[fN][cN].aigua == false) { //comprovo que no sigui una casella ja ocupada
+                console.log('Casella ocupada!',fN, cN);
+                return null;
+            }if(!this.#hihaSeparacio(fN, cN, dir, i, quantitat)) { //comprovo que no estigui enganxat a un altre vaixell
+                console.log("Té un vaixell al voltant", fN, cN);
+                return null;
             }
+            else {
+                novesCoordenades.push([fN, cN]);
+            }
+            
+        }
 
-            i++;
-
-        } while(correcte && i < q)
-
-        return correcte; 
+        return novesCoordenades; 
 
     }
 
-    obtenirVaixell(nom) {
-        return this.#vaixells.found((vaixell) => vaixell.nom == nom);
+    #hihaSeparacio(f, c, direccio, i, quantitat) {
+        let afegits = [];
+        let veines = [];
+
+        //em guardo el que li he de sumar per trobar les caselles veïnes
+        afegits.push([-1, 0], [1, 0]);
+
+        //si és la primera casella
+        if(i == 0) {
+            afegits.push([0, -1], [-1, -1], [1, -1]);
+        } else if(i == quantitat-1) {//si és l'última casella
+            afegits.push([0, +1], [-1, +1], [1, +1]);
+        }
+
+        //trobo les caselles veines
+        veines = afegits.map( (afegit) => {
+            //si és direcció == 1 -> vertical (inverteixo els afegits)
+            if(direccio == 1) {
+                return [f+afegit[1], c+afegit[0]];
+            }
+            
+            return [f+afegit[0], c+afegit[1]];
+        });
+
+        //trec les coordenades que es troben fora del tauler
+        veines = veines.filter( (coord) => {
+            return coord[0] >= 0 && coord[0] < this.#tamany[0] && coord[1] >= 0 && coord[1] < this.#tamany[1];
+        });
+
+        for (let veina of veines) {
+            if(this.#caselles[veina[0]][veina[1]].aigua == false) {
+                return false;
+            }
+        }
+
+        return true;
+
     }
+
 
     //getters i setters
     get tamany() { return this.#tamany}
@@ -258,5 +257,6 @@ function generarNumRandom(max) {
     return numRand
 }
 
+//TODO: fer estàtic
 
 
