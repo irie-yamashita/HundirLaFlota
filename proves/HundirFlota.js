@@ -360,8 +360,13 @@ function gestionarClickJugar() {
     //amago els botons
     document.querySelectorAll("#botonsDireccions button").forEach((boto) => boto.style.display = "none");
 
+    document.getElementById("textVaixells").textContent = "Estat dels teus vaixells: ";
+
     //elimino events (dels vaixells i caselles)
-    document.querySelectorAll("#botonsVaixells button").forEach((boto) => boto.removeEventListener("click", gestionarClickVaixell));
+    document.querySelectorAll("#botonsVaixells button").forEach((boto) => {
+        boto.removeEventListener("click", gestionarClickVaixell);
+        boto.style.all = "unset";
+    });
     document.querySelectorAll("#j2 .casella").forEach((casella) => casella.removeEventListener("click", gestionarClickCasella));
 
     //activo els de joc
@@ -399,13 +404,6 @@ function gestionarClickCasellaIA(event) {
     //li canvio l'estil per marcar que està selecionada
     let casellaSeleccionada = document.getElementById(casellaUsu);
     casellaSeleccionada.classList.add("seleccionat");
-}
-
-function atacar(f, c, tauler) {
-    let estatAtac = tauler.atacar(f, c);
-    actualitzaCasella(generarIdCasella(tauler, f, c), tauler);
-
-    return estatAtac
 }
 
 /* Funció que controla els atacs de l'USUARI.
@@ -482,7 +480,7 @@ function atacarIA() {
         actualitzarEnfonsat(estatAtac);
 
         if(!taulerJugador.derrota()) {
-            setTimeout(atacarIA, 2000); //setTimeout per simular que la IA pensa
+            setTimeout(atacarIA, 1000); //setTimeout per simular que la IA pensa
         } else {
             finalitzarPartida("Màquina");
         }
@@ -531,7 +529,7 @@ function eliminarEventsFinals() {
     let botoAtacar = document.getElementById("atacar_btn");
     botoAtacar.removeEventListener("click", atacarHandler);
 
-    let caselles = document.querySelectorAll("#tauler1 .casella");
+    let caselles = document.querySelectorAll(".casella");
     for(let casella of caselles) {
         casella.removeEventListener("click", seleccionaCasella);
     }

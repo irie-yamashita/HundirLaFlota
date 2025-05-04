@@ -238,10 +238,6 @@ export class Tauler {
     }
 
 
-    obtenirVaixell(nom) {
-        return this.#vaixells.found((vaixell) => vaixell.nom == nom);
-    }
-
     //getters i setters
     get tamany() { return this.#tamany}
     get vaixells() { return this.#vaixells}
