@@ -155,6 +155,7 @@ function generarBotons() {
 }
 
 function init() {
+
     //Carrego dades dels vaixells
     let vaixellsJoc = cargarJson(vaixellsJSON);
 
@@ -179,8 +180,6 @@ function init() {
     //creo el taulell i botons
     taulerJugador = new Tauler("j2", [10, 10]);
     AI = new IA (taulerIA.tamany[0]);
-
-    console.log(AI);
 
     //mostro el tauler
     crearTauler(taulerJugador, "tauler2", true);
@@ -580,3 +579,67 @@ function crearElement(tipus, contingut, id, classes, pare) {
     pare.appendChild(element);
     return element;
 }
+
+
+
+/***
+ * CONEXIÓN A API
+ */
+
+async function guardarPartida(nomJugador, tableroJugador, tableroIA, torn) {
+    const partida = {
+        "jugador": nomJugador,
+        "tableroJugador": tableroJugador.serialitzar(),
+        "tableroIA": tableroIA.serialitzar(),
+        "torn": String(torn)
+    };
+
+    console.log(partida);
+
+    try {
+        const response = await fetch("http://localhost:3000/partidas", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(partida)
+        });
+
+        if (!response.ok) throw new Error("Error al guardar la partida");
+
+        const data = await response.json();
+        console.log("Partida guardada con éxito:", data);
+        return data.id; // ID de la partida
+    } catch (err) {
+        console.error("Error:", err);
+    }
+}
+
+
+async function cargarPartida(idPartida) {
+    try {
+        const response = await fetch(`http://localhost:3000/partidas/${idPartida}`);
+        if (!response.ok) throw new Error("No se encontró la partida");
+
+        const data = await response.json();
+        console.log("Partida cargada:", data);
+        return data;
+    } catch (err) {
+        console.error("Error:", err);
+    }
+}
+
+document.getElementById("btnGuardar").addEventListener("click", () => {
+    const nomJugador = prompt("Introduce tu nombre:");
+    //DEFINE AQUI LO QUE QUIERAS, PUEDES AÑADIR MAS PARAMETROS
+    guardarPartida(nomJugador, taulerJugador, taulerIA, torn);
+});
+
+document.getElementById("btnCargar").addEventListener("click", async () => {
+    const id = prompt("Introduce el ID de la partida:");
+    const partida = await cargarPartida(id);
+    // Llamamos a la función que recupera los tableros 
+    
+    // PROGRAMAR
+    recuperaTablerosApi(partida);
+});
