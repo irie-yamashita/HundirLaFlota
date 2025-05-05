@@ -151,7 +151,7 @@ export class Tauler {
         return true;
     }
 
-    //mètodes privats (helpers)
+
 
     vaixellEnfonsat (vaixell) {
 
@@ -165,6 +165,30 @@ export class Tauler {
         vaixell.enfonsat = true;
         return true;
     }
+
+    serialitzar() {
+
+        let obj = {
+            "jugador": this.jugador,
+            "tamany": this.#tamany,
+            "vaixells": JSON.stringify(this.#vaixells.map(vaixell => vaixell.serialitzar())),
+        };
+
+        let casellesArray = [];
+        for(let f = 0; f < this.tamany[0]; f++) {
+            for(let c = 0; c < this.tamany[1]; c++) {
+                casellesArray.push(this.#caselles[c][f].serialitzar(f, c));
+            }
+        }
+
+        obj['caselles'] = JSON.stringify(casellesArray);
+
+
+
+        return JSON.stringify(obj);
+    }
+
+    //mètodes privats (helpers)
 
     /*Mètode que valida si es pot col·locar un vaixell. Si es pot, retorna les coordenades. Si no es pot, retorna null.*/
     #hiHaEspai(f, c, dir, quantitat) {

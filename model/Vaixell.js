@@ -35,5 +35,17 @@ export class Vaixell {
         this.#enfonsat = false;
     }
 
+    serialitzar() {
+        let obj = {
+            "id" : this.#id,
+            "nom": this.#nom,
+            "mida": this.#mida,
+            "coordenades": this.#coordenades,
+            "enfonsat": this.#enfonsat
+        };
+        
+        return JSON.stringify(obj);
+    }
+
 
 }

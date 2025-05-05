@@ -76,7 +76,6 @@ function actualitzaCasella(id, tauler, jugador = false) {
     //casella.textContent = `[${coord.f},${coord.c}]`;
 
     let aigua = tauler.caselles[coord.f][coord.c].aigua;
-    let jugada = tauler.caselles[coord.f][coord.c].jugada;
     if (aigua) {
         casella.setAttribute("class", "casella aigua");
     } else {
@@ -174,6 +173,7 @@ function init() {
     //mostro el tauler (part visual)
     crearTauler(taulerIA, "tauler1", false);
 
+    console.log(taulerIA.serialitzar());
 
     //TAULER 02: jugador
     //creo el taulell i botons
@@ -447,7 +447,7 @@ function gestionarAtac() {
 
 
     } else {
-        alert("NO és el teu torn, espera.");
+        alert("No és el teu torn, espera.");
     }
 
 }
@@ -459,8 +459,7 @@ function atacarIA() {
     
     //ataco
     let estatAtac = taulerJugador.atacar(coord.f, coord.c);
-    taulerJugador.caselles[coord.f][coord.c].jugada = true;
-
+    
     //si he tocat (direcció correcta)
     if(estatAtac != false) {
 
