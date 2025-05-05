@@ -638,8 +638,14 @@ document.getElementById("btnGuardar").addEventListener("click", () => {
 document.getElementById("btnCargar").addEventListener("click", async () => {
     const id = prompt("Introduce el ID de la partida:");
     const partida = await cargarPartida(id);
+
     // Llamamos a la función que recupera los tableros 
     
     // PROGRAMAR
-    recuperaTablerosApi(partida);
+    recuperaTaulersApi(partida);
 });
+
+async function recuperaTaulersApi(partida) {
+    console.log(JSON.parse(partida));
+
+}
