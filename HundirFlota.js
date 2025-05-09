@@ -174,11 +174,9 @@ function init() {
     //mostro el tauler (part visual)
     crearTauler(taulerIA, "tauler1", false);
 
-    console.log(taulerIA.serialitzar());
-
     //TAULER 02: jugador
     //creo el taulell i botons
-    taulerJugador = new Tauler("j2", [10, 10]);
+    taulerJugador = new Tauler("IA", [10, 10]);
     AI = new IA (taulerIA.tamany[0]);
 
     //mostro el tauler
@@ -586,15 +584,14 @@ function crearElement(tipus, contingut, id, classes, pare) {
  * CONEXIÓN A API
  */
 
-async function guardarPartida(nomJugador, tableroJugador, tableroIA, torn) {
+async function guardarPartida(nomJugador, taulerJugador, taulerIA, torn) {
+    //TODO: què passa si no introdueix un nom???
     const partida = {
         "jugador": nomJugador,
-        "tableroJugador": tableroJugador.serialitzar(),
-        "tableroIA": tableroIA.serialitzar(),
+        "taulerJugador": taulerJugador.serialitzar(),
+        "taulerIA": taulerIA.serialitzar(),
         "torn": String(torn)
     };
-
-    console.log(partida);
 
     try {
         const response = await fetch("http://localhost:3000/partidas", {
@@ -641,11 +638,27 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
 
     // Llamamos a la función que recupera los tableros 
     
-    // PROGRAMAR
+    // TODO: PROGRAMAR
     recuperaTaulersApi(partida);
 });
 
-async function recuperaTaulersApi(partida) {
-    console.log(JSON.parse(partida));
+async function recuperaTaulersApi(partida) {  
+
+    let dadesTaulerJugador = JSON.parse(partida.taulerJugador);
+
+    // creo nou tauler i carrego les dades
+    taulerJugador = new Tauler(partida.jugador, dadesTaulerJugador.tamany);
+    taulerJugador.carregarDades(dadesTaulerJugador); //TODO: programar carregar tauler
+
+
+    //creo, carrego i afegeixo els vaixells del jugador
+    let dadesVaixells = JSON.parse(dadesTaulerJugador.vaixells);
+    dadesVaixells.forEach((dadesVaixell) => {
+        let vaixell = new Vaixell ();
+        vaixell.carregarDades(dadesVaixell);
+
+        taulerJugador.afegirVaixell(vaixell);
+    });
+
 
 }

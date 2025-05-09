@@ -35,4 +35,8 @@ export class Casella {
 
         return JSON.stringify(obj);
     }
+
+    carregarDades (dades) {
+        
+    }
 }

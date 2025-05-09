@@ -23,10 +23,11 @@ export function crearPartida(req, res) {
     const nuevaPartida = {
         id: generarId(),
         jugador: req.body.jugador,
-        tableroJugador: req.body.taulerJugador,
-        tableroIA: req.body.taulerIA,
+        taulerJugador: req.body.taulerJugador,
+        taulerIA: req.body.taulerIA,
         torn: req.body.torn
     };
+    
     data.push(nuevaPartida);
     fs.writeFileSync(rutaArchivo, JSON.stringify(data, null, 2));
     res.status(201).json(nuevaPartida);

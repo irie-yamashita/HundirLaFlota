@@ -3,9 +3,9 @@ export class Vaixell {
     #nom;
     #mida;
     #coordenades;
-    #enfonsat
+    #enfonsat;
 
-    constructor (id, nom, mida){
+    constructor (id = 'dfault', nom = 'default', mida ='0'){
         this.#id = id;
         this.#nom = nom;
         this.#mida = mida;
@@ -45,6 +45,17 @@ export class Vaixell {
         };
         
         return JSON.stringify(obj);
+    }
+
+    carregarDades(dades) {
+        let dadesVaixell = JSON.parse(dades);
+
+        this.#id = dadesVaixell.id;
+        this.#nom = dadesVaixell.nom;
+        this.#mida = dadesVaixell.mida;
+        this.#coordenades = dadesVaixell.coordenades;
+        this.#enfonsat = dadesVaixell.enfonsat;
+
     }
 
 

@@ -188,6 +188,11 @@ export class Tauler {
         return JSON.stringify(obj);
     }
 
+    carregarDades(dades) {
+        
+    }
+
+
     //mètodes privats (helpers)
 
     /*Mètode que valida si es pot col·locar un vaixell. Si es pot, retorna les coordenades. Si no es pot, retorna null.*/
