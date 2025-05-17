@@ -6,19 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="estilsHundirFlota.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script type="module" src="HundirFlota.js" defer></script>
 </head>
 
 <body>
     <header>
         <nav>
-            <button id="btnGuardar">Guardar Partida</button> <!--TODO: addEventListeners()-->
-            <button id="btnCargar">Cargar Partida</button>
-
-            <button id="btnRegistre">Registre partides</button>
+            <button id="btnGuardar"><i class="fa-solid fa-save"></i><p>Guardar Partida</p></button>
+            <button id="btnCargar"><i class="fa-solid fa-folder-open"></i></i> <p>Carregar Partida</p></button>
+            <button id="btnRegistre"><i class="fa-solid fa-database"></i><p>Veure Partides</p></button>
         </nav>
     </header>
-    <h1>Hundir la Flota</h1>
+    <h1 id="titol">Hundir la Flota</h1>
     <main>
         <div id="j2">
             <h2>Tauler Jugador</h2>
@@ -42,7 +42,6 @@
 
         </div>
 
-
         <div id="j1">
             <h2>Tauler IA</h2>
             <div class="tauler_container">
@@ -53,8 +52,6 @@
                     <p>Selecciona una casella i prem el botó per iniciar l'atac.</p>
                     <button id="atacar_btn">ATACAR</button>
                 </div>
-
-
             </div>
         </div>
     </main>

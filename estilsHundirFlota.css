@@ -1,14 +1,91 @@
+@font-face {
+    font-family: 'celsius';
+    src: url('src/fonts/Celsius\ Flower.ttf') format('truetype');
+}
+
 * {
     padding: 0px;
     margin: 0px;
 
-    /* border: solid black 1px; */
+    /*  */
+    box-sizing: border-box;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+p {
+    font-size: 0.9rem;
+}
+
+/*NAV*/
+nav {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    justify-content: end;
+
+    padding: 20px 30px;
+}
+
+nav button {
+    position: relative;
+    
+    /*trec estils predefinits*/
+    background: none;
+    border-width: 0px;
+
+    color: #4248a5;
+
+    transition: transform 0.3s ease-in-out;
+}
+
+nav i {
+    font-size: 20px;
+}
+
+nav button:hover {
+    transform: scale(1.15);
+}
+
+nav button p {
+    font-size: 0.7rem;
+    position: absolute;
+
+    /*centro text i el poso sota*/
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%);
+
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+nav button:hover p {
+    opacity: 1;
+    visibility: visible;
 }
 
 
 
+#titol {
+    padding-left: 30px;
+}
+
+body{
+    width: 100%;
+    /*background-color: rgb(22, 39, 56);*/
+    background-color: #f0f0e0;
+
+    display: flex;
+    flex-direction: column;
+
+    justify-content: center;
+}
+
+
 h1, h2{
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'celsius', sans-serif;
+    letter-spacing: 1px;
     color: #4248a5;
 
     width: 100%;
@@ -16,26 +93,21 @@ h1, h2{
 }
 
 
-body{
-    /*background-color: rgb(22, 39, 56);*/
-    background-color: #f0f0e0;
-    padding: 20px;
-}
-
 main {
+    width: 100%;
     height: 100vh;
+
     display: flex;
-    justify-content:space-around;
+    justify-content:center;
+
+    margin-top: 30px;
+    padding: 30px;
 
     gap:10px;
-    padding: 20px;
 
-    width: 100%;
 }
 
 #j2, #j1 {
-    width: 50%;
-
     display: flex;
     flex-direction: column;
     
@@ -44,6 +116,8 @@ main {
 
 .tauler_container {
     display: flex;
+    max-width: 100%;
+
     font-size: 1rem;
 
     gap: 10px;
@@ -55,7 +129,8 @@ main {
     border: 10px solid transparent;
     border-image: url('tu-imagen-de-borde.png') 30 stretch;
 
-    grid-template-columns: repeat(4, 55px);
+    grid-template-columns: repeat(auto-fit, minmax(55px, 1fr));
+    max-width: 100%;
 
     justify-content: left;
 
@@ -83,15 +158,27 @@ main {
 .vaixell_container{
     width: 100%;
     display: flex;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 0.9rem;
 
     gap: 5px;
 }
 
 .vaixell_container button{
     width: 100%;
+    padding-left: 10px;
     text-align: left;
 
-    padding-left: 5px;
+    background-color:#ddddcf;
+    border-width: 0px;
+    border-radius: 5px;
+
+    transition: transform 0.3s ease-in-out;
+}
+
+.vaixell_container button:hover {
+    transform: scale(1.05);
+    background-color:#f8f8e9;
 }
 
 .vaixell_icona {
@@ -105,11 +192,10 @@ main {
     gap:5px
 }
 
-
+/*CASELLA*/
 .casella {
     width: 50px;
     height: 50px;
-
 
     border: 1px solid rgb(181, 223, 240);
     background-color: #4248a5;
@@ -148,6 +234,8 @@ main {
     height: 100%;
 }
 
+
+/*REND / PLANTILLA*/
 .rendVaixell {
     width: auto;
     height: auto;
@@ -187,7 +275,7 @@ main {
 }
 
 
-/*Estils botons*/
+/*BOTONS*/
 #H_btn, #V_btn {
     width: 25px;
     height: 25px;
