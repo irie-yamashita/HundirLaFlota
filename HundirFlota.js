@@ -621,7 +621,6 @@ async function guardarPartida(nomJugador, taulerJugador, taulerIA, torn) {
     }
 }
 
-
 async function cargarPartida(idPartida) {
     try {
         const response = await fetch(`http://localhost:3000/partidas/${idPartida}`);
@@ -635,14 +634,26 @@ async function cargarPartida(idPartida) {
     }
 }
 
+async function cargarPartides() {
+    try {
+        const response = await fetch(`http://localhost:3000/partidas`);
+        if (!response.ok) throw new Error("No s'han trobat les partides");
+
+        const data = await response.json();
+        return data;
+    } catch (err) {
+        console.error("Error:", err);
+    }
+}
+
 document.getElementById("btnGuardar").addEventListener("click", () => {
-    if(taulerJugador.vaixells.length == taulerIA.vaixells.length) {
+    if (taulerJugador.vaixells.length == taulerIA.vaixells.length) {
         let nomJugador = prompt("Introduce tu nombre:");
 
-        if(nomJugador) {
+        if (nomJugador) {
             guardarPartida(nomJugador, taulerJugador, taulerIA, torn);
         }
-        
+
     } else {
         alert("Has de col·locar tots els vaixells per poder guardar la partida!")
     }
@@ -651,7 +662,7 @@ document.getElementById("btnGuardar").addEventListener("click", () => {
 
 document.getElementById("btnCargar").addEventListener("click", async () => {
     const id = prompt("Introduce el ID de la partida:");
-    if(id) {
+    if (id) {
         const partida = await cargarPartida(id);
 
         // Llamamos a la función que recupera los tableros 
@@ -662,6 +673,58 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     }
 
 });
+
+document.getElementById("btnRegistre").addEventListener("click", async () => {
+    console.log(window.screen.width);
+    let left = Number(window.screen.width) - 400 - 50; //200 és la width
+    let finestraRegistre = window.open("RegistrePartides.html", "Partides", "width=400, height=500, top=100, left=" + left);
+
+
+    let partides = await cargarPartides();
+    let container = finestraRegistre.document.getElementById("info_partides");
+
+    let taulaHtml = `
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Jugador</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    for (let partida of partides) {
+        taulaHtml += `
+            <tr>
+                <td class='partida'>${partida.id}</td>
+                <td class='partida'>${partida.jugador}</td>
+            </tr>`;
+    }
+
+    taulaHtml += `
+            </tbody>
+        </table>
+    `;
+
+    container.innerHTML = taulaHtml;
+
+});
+
+
+async function recuperarRegistres(partida) {
+    try {
+        const response = await fetch(`http://localhost:3000/partidas/${idPartida}`);
+        if (!response.ok) throw new Error("No se encontró la partida");
+
+        const data = await response.json();
+        console.log("Partida cargada:", data);
+        return data;
+    } catch (err) {
+        console.error("Error:", err);
+    }
+
+}
 
 async function recuperaTaulersApi(partida) {
     torn = partida.torn;
