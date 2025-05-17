@@ -9,8 +9,7 @@ let casellaUsu;
 
 let torn = true;
 
-let taulerIA;
-let taulerJugador;
+let taulerIA; let taulerJugador;
 let AI;
 
 const vaixellsJSON = `[
@@ -22,8 +21,6 @@ const vaixellsJSON = `[
 ]`;
 
 let vaixellsJoc = cargarJson(vaixellsJSON);
-
-
 
 //FUNCIONS
 
@@ -57,51 +54,65 @@ function crearTauler(tauler, id, interactuable = false) {
 }
 
 /*Funció que actualitza les caselles del tauler (canvia les classes).*/
-function actualitzarTauler(tauler) {
+function actualitzarTauler(tauler, IA = false) {
     for (let f = 0; f < tauler.tamany[0]; f++) {
         for (let c = 0; c < tauler.tamany[1]; c++) {
             let id = tauler.jugador + `-${f}-${c}`;
-            actualitzaCasella(id, tauler);
+
+            if (!IA) {
+                actualitzaCasella(id, tauler);
+            } else {
+                actualitzaCasella(id, tauler, true);
+            }
+
         }
     }
 
 }
+/*
+
+TAULER IA: només es mostren caselles destapades
+TAULER JUGADOR: es mostra TOT. Les caselles tocades amb una màscara.
+
+*/
 
 /*Funció que consulta l'objecte tauler i actualitza la casella amb l'id passat per paràmetre.*/
-function actualitzaCasella(id, tauler, jugador = false) {
+function actualitzaCasella(id, tauler, IA = false) {
 
     let casella = document.getElementById(id);
-
     let coord = extreureCoordenades(id);
     //casella.textContent = `[${coord.f},${coord.c}]`;
 
-    let aigua = tauler.caselles[coord.f][coord.c].aigua;
-    if (aigua) {
-        casella.setAttribute("class", "casella aigua");
-    } else {
+    //mostro les caselles només si és el tauler del jugador o si la casella ha estat jugada
+    if (tauler.caselles[coord.f][coord.c].jugada || !IA) {
+        let aigua = tauler.caselles[coord.f][coord.c].aigua;
+        if (aigua) {
+            casella.setAttribute("class", "casella aigua");
+        } else {
 
-        //trec la classe aigua, li afegeixo la classe vaixell general i la concreta
-        casella.classList.remove("aigua");
-        casella.classList.add("vaixell");
+            //trec la classe aigua, li afegeixo la classe vaixell general i la concreta
+            casella.classList.remove("aigua");
+            casella.classList.add("vaixell");
 
-        let nom = tauler.caselles[coord.f][coord.c].nomVaixell;
-        casella.classList.add(nom[0]);
+            let nom = tauler.caselles[coord.f][coord.c].nomVaixell;
+            casella.classList.add(nom[0]);
 
 
-        let tocat = tauler.caselles[coord.f][coord.c].tocat;
+            let tocat = tauler.caselles[coord.f][coord.c].tocat;
 
-        if (tocat) {
-            casella.classList.add("tocat");
+            if (tocat) {
+                casella.classList.add("tocat");
+            }
+
         }
 
-    }
+        if (!IA && tauler.caselles[coord.f][coord.c].jugada) {
+            let mascara = document.createElement("div");
+            mascara.setAttribute("class", "mascara");
 
-    //si és del tauler del jugador canvio la part visual
-    if(jugador == true) {
-        let mascara = document.createElement("div");
-        mascara.setAttribute("class", "mascara");
+            casella.appendChild(mascara);
+        }
 
-        casella.appendChild(mascara);
     }
 
 }
@@ -131,8 +142,8 @@ function generarBotons() {
     /* Botons dels vaixells */
     vaixellsJoc.forEach(vaixell => {
         let divVaixell = crearElement("div", "", "", ["vaixell_container"], contenidorV);
-        crearElement("div", "", vaixell.name+"_icona", [vaixell.name[0], "vaixell_icona"], divVaixell);
-        let boto = crearElement("button", vaixell.name, vaixell.name+"_btn", ["vaixellsBtn"], divVaixell);
+        crearElement("div", "", vaixell.name + "_icona", [vaixell.name[0], "vaixell_icona"], divVaixell);
+        let boto = crearElement("button", vaixell.name, vaixell.name + "_btn", ["vaixellsBtn"], divVaixell);
 
 
         //listener per detectar quin vaixell col·locar
@@ -177,7 +188,7 @@ function init() {
     //TAULER 02: jugador
     //creo el tauler i botons
     taulerJugador = new Tauler("j1", [10, 10]);
-    AI = new IA (taulerIA.tamany[0]);
+    AI = new IA(taulerIA.tamany[0]);
 
     //mostro el tauler
     crearTauler(taulerJugador, "tauler2", true);
@@ -284,7 +295,7 @@ function gestionarReset() {
 
     resetTauler(taulerJugador);
     let botoJugar = document.getElementById("jugar_btn");
-    if(botoJugar) {
+    if (botoJugar) {
         botoJugar.remove();
     }
 
@@ -377,7 +388,7 @@ function gestionarClickJugar() {
 function activarEventsAtac() {
 
     //Afegeixo listeners a les caselles del tauler IA
-    document.querySelectorAll("#j1 .casella").forEach((casella) =>  casella.addEventListener('click', gestionarClickCasellaIA));
+    document.querySelectorAll("#j1 .casella").forEach((casella) => casella.addEventListener('click', gestionarClickCasellaIA));
 
     //Afegeixo listener al botó d'atac
     document.getElementById("atacar_btn").addEventListener("click", gestionarAtac);
@@ -434,7 +445,7 @@ function gestionarAtac() {
                 alert("Tocat i enfonsat!");
             }
 
-            if(taulerIA.derrota()) {
+            if (taulerIA.derrota()) {
                 finalitzarPartida("Usuari");
             }
 
@@ -453,29 +464,29 @@ function gestionarAtac() {
 /* Funció que genera l'atac de la IA cap al tauler del jugador*/
 function atacarIA() {
     let coord = AI.pensarCoordenades();
-    
+
     //ataco
     let estatAtac = taulerJugador.atacar(coord.f, coord.c);
-    
+
     //si he tocat (direcció correcta)
-    if(estatAtac != false) {
+    if (estatAtac != false) {
 
         //si és el primer cop que toco, reinicio les direccions i em guardo la casella
-        if(AI.memoria.length <= 0) {
+        if (AI.memoria.length <= 0) {
             AI.generarMemoriaIA(coord.f, coord.c);
         }
 
-        AI.actualitzarMemoriaIA(coord.f,coord.c);
+        AI.actualitzarMemoriaIA(coord.f, coord.c);
 
         //si he enfonsat el vaixell, borro la memòria i reinicio les direccions
-        if(estatAtac != true) {
+        if (estatAtac != true) {
             AI.esborrarMemoriaIA();
         }
 
         //actualitzo la part visual
         actualitzarEnfonsat(estatAtac);
 
-        if(!taulerJugador.derrota()) {
+        if (!taulerJugador.derrota()) {
             setTimeout(atacarIA, 1000); //setTimeout per simular que la IA pensa
         } else {
             finalitzarPartida("Màquina");
@@ -484,7 +495,7 @@ function atacarIA() {
 
     } else {
         //si he tocat aigua, però encara no he enfonsat, canvio de direcció
-        if(AI.memoria.length > 0) {
+        if (AI.memoria.length > 0) {
             AI.canviDireccioIA();
         }
         torn = true;
@@ -500,8 +511,8 @@ function atacarIA() {
 
 /*Funció que marca visaulment que un vaixell del tauler del jugardor ha estat enfonsat*/
 function actualitzarEnfonsat(vaixell) {
-    if(vaixell.enfonsat == true) {
-        let idIcona = vaixell.nom+"_icona";
+    if (vaixell.enfonsat == true) {
+        let idIcona = vaixell.nom + "_icona";
 
         let iconaVaixell = document.getElementById(idIcona);
 
@@ -510,11 +521,11 @@ function actualitzarEnfonsat(vaixell) {
 }
 
 /*Funció que és cridada quan algú guanya la partida. Crida a una altra funció per eliminar els events.*/
-function finalitzarPartida(guanyador="") {
-    alert("S'ha acabat la partida. Ha guanyat: "+ guanyador);
+function finalitzarPartida(guanyador = "") {
+    alert("S'ha acabat la partida. Ha guanyat: " + guanyador);
 
     let resultat = document.createElement("p");
-    resultat.textContent = "Ha guanyat: "+ guanyador;
+    resultat.textContent = "Ha guanyat: " + guanyador;
     document.body.insertBefore(resultat, document.body.firstChild);
 
     eliminarEventsFinals();
@@ -526,7 +537,7 @@ function eliminarEventsFinals() {
     botoAtacar.removeEventListener("click", atacarHandler);
 
     let caselles = document.querySelectorAll(".casella");
-    for(let casella of caselles) {
+    for (let casella of caselles) {
         casella.removeEventListener("click", seleccionaCasella);
     }
 }
@@ -564,13 +575,13 @@ function cargarJson(json) {
 function crearElement(tipus, contingut, id, classes, pare) {
     let element = document.createElement(tipus);
 
-    if(id != "")
+    if (id != "")
         element.id = id;
 
-    if(contingut != "")
+    if (contingut != "")
         element.textContent = contingut;
 
-    if(classes.length != 0)
+    if (classes.length != 0)
         classes.forEach((classe) => element.classList.add(classe));
 
 
@@ -627,8 +638,9 @@ async function cargarPartida(idPartida) {
 }
 
 document.getElementById("btnGuardar").addEventListener("click", () => {
-    const nomJugador = prompt("Introduce tu nombre:");
-    //DEFINE AQUI LO QUE QUIERAS, PUEDES AÑADIR MAS PARAMETROS
+    let nomJugador = prompt("Introduce tu nombre:");
+    nomJugador = nomJugador == null? nomJugador : "user";
+
     guardarPartida(nomJugador, taulerJugador, taulerIA, torn);
 });
 
@@ -637,12 +649,13 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
     const partida = await cargarPartida(id);
 
     // Llamamos a la función que recupera los tableros 
-    
+
     // TODO: PROGRAMAR
     recuperaTaulersApi(partida);
 });
 
-async function recuperaTaulersApi(partida) {  
+async function recuperaTaulersApi(partida) {
+    torn = partida.torn;
 
     // creo nou tauler Jugador i carrego les dades
     taulerJugador = new Tauler();
@@ -653,23 +666,23 @@ async function recuperaTaulersApi(partida) {
     taulerIA.carregarDades(partida.taulerIA);
 
 
-    //creo, carrego i afegeixo els vaixells del jugador
+    // creo, carrego i afegeixo els vaixells del jugador
     let dadesVaixellsJugador = JSON.parse(JSON.parse(partida.taulerJugador).vaixells);
     let dadesVaixellsIA = JSON.parse(JSON.parse(partida.taulerIA).vaixells);
 
     recuperarVaixells(dadesVaixellsJugador, taulerJugador);
     recuperarVaixells(dadesVaixellsIA, taulerIA);
 
-    //actualitzo taulers
-    actualitzarTauler(taulerIA);
+    // actualitzo taulers
+    actualitzarTauler(taulerIA, true);
     actualitzarTauler(taulerJugador);
-    
+
 }
 
 function recuperarVaixells(dadesJSON, tauler) {
 
     dadesJSON.forEach((dadesVaixell) => {
-        let vaixell = new Vaixell ();
+        let vaixell = new Vaixell();
         vaixell.carregarDades(dadesVaixell);
 
         tauler.afegirVaixell(vaixell);
