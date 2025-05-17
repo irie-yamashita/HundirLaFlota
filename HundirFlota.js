@@ -117,8 +117,6 @@ function actualitzaCasella(id, tauler, IA = false) {
 
 }
 
-
-
 /*Funció que fa un reset del tauler (a nivell visual).*/
 function resetTauler(tauler) {
 
@@ -434,7 +432,7 @@ function gestionarAtac() {
             let estatAtac = taulerIA.atacar(coord.f, coord.c);
 
             //mostro casella (visual)
-            actualitzaCasella(casellaUsu, taulerIA);
+            actualitzaCasella(casellaUsu, taulerIA, true);
             casellaUsu = "";
 
             //si usuari no ha tocat, canvi de torn, li toca a la màquina
@@ -505,7 +503,7 @@ function atacarIA() {
 
     //canvio estat de la casella i actualitzo la part visual
     let idCasella = generarIdCasella(taulerJugador, coord.f, coord.c);
-    actualitzaCasella(idCasella, taulerJugador, true);
+    actualitzaCasella(idCasella, taulerJugador);
 }
 
 
@@ -638,20 +636,31 @@ async function cargarPartida(idPartida) {
 }
 
 document.getElementById("btnGuardar").addEventListener("click", () => {
-    let nomJugador = prompt("Introduce tu nombre:");
-    nomJugador = nomJugador == null? nomJugador : "user";
+    if(taulerJugador.vaixells.length == taulerIA.vaixells.length) {
+        let nomJugador = prompt("Introduce tu nombre:");
 
-    guardarPartida(nomJugador, taulerJugador, taulerIA, torn);
+        if(nomJugador) {
+            guardarPartida(nomJugador, taulerJugador, taulerIA, torn);
+        }
+        
+    } else {
+        alert("Has de col·locar tots els vaixells per poder guardar la partida!")
+    }
+
 });
 
 document.getElementById("btnCargar").addEventListener("click", async () => {
     const id = prompt("Introduce el ID de la partida:");
-    const partida = await cargarPartida(id);
+    if(id) {
+        const partida = await cargarPartida(id);
 
-    // Llamamos a la función que recupera los tableros 
+        // Llamamos a la función que recupera los tableros 
+        recuperaTaulersApi(partida);
 
-    // TODO: PROGRAMAR
-    recuperaTaulersApi(partida);
+        gestionarClickJugar();
+        activarEventsAtac();
+    }
+
 });
 
 async function recuperaTaulersApi(partida) {
