@@ -6,7 +6,7 @@ export class Tauler {
     #vaixells;
     #caselles;
 
-    constructor(jugador, tamany) {
+    constructor(jugador='', tamany=[]) {
         this.jugador = jugador;
         this.#tamany = tamany;
         this.#caselles = [];
@@ -27,6 +27,7 @@ export class Tauler {
     }
 
     atacar(f, c) {
+        this.#caselles[f][c].jugada = true;
         if(this.#caselles[f][c].aigua == true) {
             return false //no he tocat
         } else {
@@ -43,7 +44,6 @@ export class Tauler {
             } else {
                 return true;
             }
-
 
         }
 
@@ -174,21 +174,40 @@ export class Tauler {
             "vaixells": JSON.stringify(this.#vaixells.map(vaixell => vaixell.serialitzar())),
         };
 
-        let casellesArray = [];
+        let casellesMatriu = [];
         for(let f = 0; f < this.tamany[0]; f++) {
+            let casellesFila = [];
             for(let c = 0; c < this.tamany[1]; c++) {
-                casellesArray.push(this.#caselles[c][f].serialitzar(f, c));
+                casellesFila.push(this.#caselles[c][f].serialitzar(f, c));
             }
+            casellesMatriu.push(casellesFila);
         }
 
-        obj['caselles'] = JSON.stringify(casellesArray);
+        obj['caselles'] = JSON.stringify(casellesMatriu);
 
 
 
         return JSON.stringify(obj);
     }
 
-    carregarDades(dades) {
+    carregarDades(dadesJSON) {
+        let dades = JSON.parse(dadesJSON);
+        this.jugador = dades.jugador;
+        this.tamany = dades.tamany;
+
+        let dadesCaselles = JSON.parse(dades.caselles);
+
+        for (let f = 0; f < this.#tamany[0]; f++) { //recorro per files
+            let fila = [];
+            for (let c = 0; c < this.#tamany[1]; c++) {  //recorro per columnes
+                let casella = new Casella();
+                casella.carregarDades(dadesCaselles[f][c]);
+
+                fila[c] = casella;
+            }
+            this.#caselles[f] = fila;
+        }
+
         
     }
 

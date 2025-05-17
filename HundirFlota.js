@@ -160,7 +160,7 @@ function init() {
     let vaixellsJoc = cargarJson(vaixellsJSON);
 
     //TAULER 01: IA
-    taulerIA = new Tauler("j1", [10, 10]);
+    taulerIA = new Tauler("IA", [10, 10]);
 
     //genero un vaixell de cada tipus
     for (let dades of vaixellsJoc) {
@@ -175,8 +175,8 @@ function init() {
     crearTauler(taulerIA, "tauler1", false);
 
     //TAULER 02: jugador
-    //creo el taulell i botons
-    taulerJugador = new Tauler("IA", [10, 10]);
+    //creo el tauler i botons
+    taulerJugador = new Tauler("j1", [10, 10]);
     AI = new IA (taulerIA.tamany[0]);
 
     //mostro el tauler
@@ -644,21 +644,34 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
 
 async function recuperaTaulersApi(partida) {  
 
-    let dadesTaulerJugador = JSON.parse(partida.taulerJugador);
+    // creo nou tauler Jugador i carrego les dades
+    taulerJugador = new Tauler();
+    taulerJugador.carregarDades(partida.taulerJugador); //TODO: programar carregar tauler
 
-    // creo nou tauler i carrego les dades
-    taulerJugador = new Tauler(partida.jugador, dadesTaulerJugador.tamany);
-    taulerJugador.carregarDades(dadesTaulerJugador); //TODO: programar carregar tauler
+    // creo nou tauler IA i carrego les dades
+    taulerIA = new Tauler();
+    taulerIA.carregarDades(partida.taulerIA);
 
 
     //creo, carrego i afegeixo els vaixells del jugador
-    let dadesVaixells = JSON.parse(dadesTaulerJugador.vaixells);
-    dadesVaixells.forEach((dadesVaixell) => {
+    let dadesVaixellsJugador = JSON.parse(JSON.parse(partida.taulerJugador).vaixells);
+    let dadesVaixellsIA = JSON.parse(JSON.parse(partida.taulerIA).vaixells);
+
+    recuperarVaixells(dadesVaixellsJugador, taulerJugador);
+    recuperarVaixells(dadesVaixellsIA, taulerIA);
+
+    //actualitzo taulers
+    actualitzarTauler(taulerIA);
+    actualitzarTauler(taulerJugador);
+    
+}
+
+function recuperarVaixells(dadesJSON, tauler) {
+
+    dadesJSON.forEach((dadesVaixell) => {
         let vaixell = new Vaixell ();
         vaixell.carregarDades(dadesVaixell);
 
-        taulerJugador.afegirVaixell(vaixell);
+        tauler.afegirVaixell(vaixell);
     });
-
-
 }
