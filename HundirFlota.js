@@ -123,9 +123,6 @@ function actualitzaCasella(id, tauler, IA = false) {
 /*Funció que fa un reset del tauler (a nivell visual).*/
 function resetTauler(tauler) {
 
-    tauler.reiniciar();
-    tauler.vaixells = [];
-
     for (let f = 0; f < tauler.tamany[0]; f++) {
         for (let c = 0; c < tauler.tamany[1]; c++) {
             let casella = document.getElementById(tauler.jugador + `-${f}-${c}`);
@@ -221,7 +218,7 @@ function gestionarClickCasella() {
 
         //comprovo si el vaixell s'ha col·locat correctament
         if (!colocat) {
-            alert("El vaixell no es pot col·locar aquí. Recorda que els vaixells no es poden tocar!");
+            alert("El barco no se puede colocar aquí. Recuerda que los barcos no se pueden tocar entre sí.");
         } else {
             //desactivo el botó i poso en blanc el vaixell seleccionat
             document.getElementById(vaixellUsu.name + "_btn").disabled = true;
@@ -244,7 +241,7 @@ function gestionarClickCasella() {
         }
 
     } else {
-        alert("Selecciona un vaixell!");
+        alert("Selecciona un barco!");
     }
 }
 
@@ -285,6 +282,8 @@ function gestionarClickDireccio(event) {
 */
 function gestionarReset() {
     //Reinicio tauler
+    tauler.reiniciar();
+    tauler.vaixells = [];
     resetTauler(taulerJugador);
 
     //Activo tots els botons
@@ -443,20 +442,20 @@ function gestionarAtac() {
                 torn = false;
                 atacarIA();
             } else if (estatAtac != true) {
-                alert("Tocat i enfonsat!");
+                alert("Tocado y undido!");
             }
 
             if (taulerIA.derrota()) {
-                finalitzarPartida("Usuari");
+                finalitzarPartida("Usuario");
             }
 
         } else {
-            alert("Selecciona una casella per atacar!");
+            alert("Selecciona una casilla para poder atacar!");
         }
 
 
     } else {
-        alert("No és el teu torn, espera.");
+        alert("No es tu turno, espera.");
     }
 
 }
@@ -490,7 +489,7 @@ function atacarIA() {
         if (!taulerJugador.derrota()) {
             setTimeout(atacarIA, 1000); //setTimeout per simular que la IA pensa
         } else {
-            finalitzarPartida("Màquina");
+            finalitzarPartida("IA");
         }
 
 
@@ -523,7 +522,7 @@ function actualitzarEnfonsat(vaixell) {
 
 /*Funció que és cridada quan algú guanya la partida. Crida a una altra funció per eliminar els events.*/
 function finalitzarPartida(guanyador = "") {
-    alert("S'ha acabat la partida. Ha guanyat: " + guanyador);
+    alert("Se ha acabado la partida. Ha ganado: " + guanyador);
 
     eliminarEventsFinals();
 }
@@ -593,7 +592,6 @@ function crearElement(tipus, contingut, id, classes, pare) {
  */
 
 async function guardarPartida(nomJugador, taulerJugador, taulerIA, torn) {
-    //TODO: què passa si no introdueix un nom???
     const partida = {
         "jugador": nomJugador,
         "taulerJugador": taulerJugador.serialitzar(),
@@ -654,7 +652,7 @@ document.getElementById("btnGuardar").addEventListener("click", () => {
         }
 
     } else {
-        alert("Has de col·locar tots els vaixells per poder guardar la partida!")
+        alert("Tienes que colocar todos tus barcos para poder guardar la partida!")
     }
 
 });
@@ -731,7 +729,7 @@ async function recuperaTaulersApi(partida) {
 
     // creo nou tauler Jugador i carrego les dades
     taulerJugador = new Tauler();
-    taulerJugador.carregarDades(partida.taulerJugador); //TODO: programar carregar tauler
+    taulerJugador.carregarDades(partida.taulerJugador);
 
     // creo nou tauler IA i carrego les dades
     taulerIA = new Tauler();
@@ -746,6 +744,7 @@ async function recuperaTaulersApi(partida) {
     recuperarVaixells(dadesVaixellsIA, taulerIA);
 
     // actualitzo taulers
+    resetTauler(taulerJugador);
     actualitzarTauler(taulerIA, true);
     actualitzarTauler(taulerJugador);
 

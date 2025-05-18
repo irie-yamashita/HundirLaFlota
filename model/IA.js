@@ -7,7 +7,7 @@ export class IA {
 
     constructor(limit) {
         this.limit = limit;
-        this.#direccions = ['U', 'D', 'L', 'R']; //TODO: canviar a 0,1 i -1
+        this.#direccions = ['U', 'D', 'L', 'R'];
         this.#memoria = [];
         this.#casellaInicial = [];
         this.#casellesJugades = [];

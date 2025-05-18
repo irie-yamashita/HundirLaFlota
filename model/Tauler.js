@@ -305,6 +305,4 @@ function generarNumRandom(max) {
     return numRand
 }
 
-//TODO: fer estàtic
-
 
