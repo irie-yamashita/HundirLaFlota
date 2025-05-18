@@ -69,7 +69,10 @@ function actualitzarTauler(tauler, IA = false) {
         }
     }
 
-    tauler.vaixells.forEach((vaixell) => actualitzarEnfonsat(vaixell));
+    if(!IA) {
+        tauler.vaixells.forEach((vaixell) => actualitzarEnfonsat(vaixell));
+    }
+
 
 }
 /*
@@ -125,10 +128,17 @@ function resetTauler(tauler, IA=false) {
 
     for (let f = 0; f < tauler.tamany[0]; f++) {
         for (let c = 0; c < tauler.tamany[1]; c++) {
-            let casella = document.getElementById(tauler.jugador + `-${f}-${c}`);
+            let id = tauler.jugador + `-${f}-${c}`;
+            let casella = document.getElementById(id);
 
             if(!IA) {
                 casella.setAttribute("class", "casella aigua");
+
+                const mascara = document.querySelector(`.casella .mascara`);
+                if(mascara) {
+                    mascara.remove();
+                }
+
             } else {
                 casella.setAttribute("class", "casella");
             }
@@ -681,7 +691,6 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
 });
 
 document.getElementById("btnRegistre").addEventListener("click", async () => {
-    console.log(window.screen.width);
     let left = Number(window.screen.width) - 400 - 50; //200 és la width
     let finestraRegistre = window.open("RegistrePartides.html", "Partides", "width=400, height=500, top=100, left=" + left);
 
