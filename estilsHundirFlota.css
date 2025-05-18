@@ -184,6 +184,12 @@ main {
 .vaixell_icona {
     width: 25px;
     height: 25px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color:#4248a5;
 }
 
 #botonsDireccions {
@@ -283,19 +289,43 @@ main {
     text-align: center;
 }
 
-#reset_btn, #atacar_btn{
+#reset_btn{
     height: 25px;
-
     padding: 0px 5px;
-    border-radius: 5px;
+}
 
+
+#jugar_btn {
     background-color:#4248a5;
     color: whitesmoke;
+
+    height: 25px;
+
+    padding: 0px 10px;
+    border-radius: 5px;
+
+    transition: transform 0.3s ease-in-out;
+}
+
+#jugar_btn:hover {
+    transform: scale(1.05);
 }
 
 #atacar_btn {
+    
+    background-color:#4248a5;
+    color: whitesmoke;
+    border-radius: 5px;
+
     height: 40px;
+
+    transition: transform 0.3s ease-in-out;
 }
+
+#atacar_btn:hover {
+    transform: scale(1.05);
+}
+
 #reset_btn:hover, #atacar_btn:hover{
 
     background-color:#4249a5ad;

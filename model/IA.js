@@ -111,7 +111,7 @@ export class IA {
         
             //si toco algun borde, vol dir que he d'anar cap a l'altra direcció
             if(fN < 0 || fN > this.limit-1 || cN < 0 || cN > this.limit-1) {
-                canviDireccioIA();
+                this.canviDireccioIA();
                 correcte = false;
             }
 

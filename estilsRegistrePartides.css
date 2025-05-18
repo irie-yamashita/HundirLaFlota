@@ -1,0 +1,47 @@
+@font-face {
+    font-family: 'celsius';
+    src: url('src/fonts/Celsius\ Flower.ttf') format('truetype');
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+
+body {
+    background-color: #f0f0e0;
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+table {
+    width: 100%;
+    background-color: rgba(250, 250, 231, 0.616);
+    border: #4248a5 0.5px solid;
+}
+
+th {
+    background-color: #4248a5;
+    color: whitesmoke;
+}
+
+tr, td {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-size: 0.9rem;
+    border: #4248a5 0.5px solid;  
+
+    background-color: whitesmoke;
+}
+
+h1, h2{
+    font-family: 'celsius', sans-serif;
+    letter-spacing: 1px;
+    color: #4248a5;
+
+    width: 100%;
+
+}

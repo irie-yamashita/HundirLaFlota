@@ -1,3 +1,4 @@
+//TODO: cartell error i estils registre partides
 import { Tauler } from "./model/Tauler.js";
 import { Vaixell } from "./model/Vaixell.js";
 import { IA } from "./model/IA.js";
@@ -67,6 +68,8 @@ function actualitzarTauler(tauler, IA = false) {
 
         }
     }
+
+    tauler.vaixells.forEach((vaixell) => actualitzarEnfonsat(vaixell));
 
 }
 /*
@@ -514,7 +517,7 @@ function actualitzarEnfonsat(vaixell) {
 
         let iconaVaixell = document.getElementById(idIcona);
 
-        iconaVaixell.textContent = "💥";
+        iconaVaixell.innerHTML = `<i class="fa-solid fa-location-crosshairs"></i>`;
     }
 }
 
@@ -522,21 +525,17 @@ function actualitzarEnfonsat(vaixell) {
 function finalitzarPartida(guanyador = "") {
     alert("S'ha acabat la partida. Ha guanyat: " + guanyador);
 
-    let resultat = document.createElement("p");
-    resultat.textContent = "Ha guanyat: " + guanyador;
-    document.body.insertBefore(resultat, document.body.firstChild);
-
     eliminarEventsFinals();
 }
 
 /*Funció que elimina els listeners dels events de la partida en la fase d'atac*/
 function eliminarEventsFinals() {
     let botoAtacar = document.getElementById("atacar_btn");
-    botoAtacar.removeEventListener("click", atacarHandler);
+    botoAtacar.removeEventListener("click", gestionarAtac);
 
     let caselles = document.querySelectorAll(".casella");
     for (let casella of caselles) {
-        casella.removeEventListener("click", seleccionaCasella);
+        casella.removeEventListener("click", gestionarClickCasellaIA);
     }
 }
 
@@ -670,6 +669,7 @@ document.getElementById("btnCargar").addEventListener("click", async () => {
 
         gestionarClickJugar();
         activarEventsAtac();
+        AI = new IA(taulerIA.tamany[0]);
     }
 
 });
@@ -748,6 +748,8 @@ async function recuperaTaulersApi(partida) {
     // actualitzo taulers
     actualitzarTauler(taulerIA, true);
     actualitzarTauler(taulerJugador);
+
+    console.log(taulerJugador);
 
 }
 

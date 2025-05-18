@@ -201,7 +201,7 @@ export class Tauler {
             let fila = [];
             for (let c = 0; c < this.#tamany[1]; c++) {  //recorro per columnes
                 let casella = new Casella();
-                casella.carregarDades(dadesCaselles[f][c]);
+                casella.carregarDades(dadesCaselles[c][f]);
 
                 fila[c] = casella;
             }
