@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'celsius';
-    src: url('src/fonts/Celsius\ Flower.ttf') format('truetype');
+    src: url('../src/fonts/Celsius\ Flower.ttf') format('truetype');
 }
 
 * {

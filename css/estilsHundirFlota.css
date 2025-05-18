@@ -1,6 +1,6 @@
 @font-face {
     font-family: 'celsius';
-    src: url('src/fonts/Celsius\ Flower.ttf') format('truetype');
+    src: url('../src/fonts/Celsius\ Flower.ttf') format('truetype');
 }
 
 * {
@@ -226,7 +226,7 @@ main {
 
 .aigua {
     background-color: rgb(105, 200, 255);
-    background-image: url("mar.png");
+    background-image: url("../src/mar.png");
     background-size: cover;
 }
 
@@ -269,7 +269,7 @@ main {
 }
 
 .C {
-    background-color: rgb(205, 248, 170);
+    background-color: #d3eea8;
 }
 
 .D {

@@ -121,15 +121,23 @@ function actualitzaCasella(id, tauler, IA = false) {
 }
 
 /*Funció que fa un reset del tauler (a nivell visual).*/
-function resetTauler(tauler) {
+function resetTauler(tauler, IA=false) {
 
     for (let f = 0; f < tauler.tamany[0]; f++) {
         for (let c = 0; c < tauler.tamany[1]; c++) {
             let casella = document.getElementById(tauler.jugador + `-${f}-${c}`);
 
-            casella.setAttribute("class", "casella aigua");
+            if(!IA) {
+                casella.setAttribute("class", "casella aigua");
+            } else {
+                casella.setAttribute("class", "casella");
+            }
+
         }
     }
+
+    let icones = document.querySelectorAll(".vaixell_icona");
+    icones.forEach((icona) => icona.innerHTML='');
 }
 
 
@@ -282,8 +290,8 @@ function gestionarClickDireccio(event) {
 */
 function gestionarReset() {
     //Reinicio tauler
-    tauler.reiniciar();
-    tauler.vaixells = [];
+    taulerJugador.reiniciar();
+    taulerJugador.vaixells = [];
     resetTauler(taulerJugador);
 
     //Activo tots els botons
@@ -292,6 +300,7 @@ function gestionarReset() {
     for (let boto of botons) {
         boto.disabled = false;
     }
+
 
     resetTauler(taulerJugador);
     let botoJugar = document.getElementById("jugar_btn");
@@ -368,7 +377,7 @@ function gestionarClickJugar() {
     //amago els botons
     document.querySelectorAll("#botonsDireccions button").forEach((boto) => boto.style.display = "none");
 
-    document.getElementById("textVaixells").textContent = "Estat dels teus vaixells: ";
+    document.getElementById("textVaixells").textContent = "Estado de tus barcos: ";
 
     //elimino events (dels vaixells i caselles)
     document.querySelectorAll("#botonsVaixells button").forEach((boto) => {
@@ -446,7 +455,7 @@ function gestionarAtac() {
             }
 
             if (taulerIA.derrota()) {
-                finalitzarPartida("Usuario");
+                finalitzarPartida("Jugador");
             }
 
         } else {
@@ -501,7 +510,6 @@ function atacarIA() {
         torn = true;
     }
 
-    console.log("ATACO");
 
     //canvio estat de la casella i actualitzo la part visual
     let idCasella = generarIdCasella(taulerJugador, coord.f, coord.c);
@@ -744,6 +752,7 @@ async function recuperaTaulersApi(partida) {
     recuperarVaixells(dadesVaixellsIA, taulerIA);
 
     // actualitzo taulers
+    resetTauler(taulerIA, true);
     resetTauler(taulerJugador);
     actualitzarTauler(taulerIA, true);
     actualitzarTauler(taulerJugador);
