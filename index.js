@@ -727,20 +727,6 @@ document.getElementById("btnRegistre").addEventListener("click", async () => {
 });
 
 
-async function recuperarRegistres(partida) {
-    try {
-        const response = await fetch(`http://localhost:3000/partidas/${idPartida}`);
-        if (!response.ok) throw new Error("No se encontró la partida");
-
-        const data = await response.json();
-        console.log("Partida cargada:", data);
-        return data;
-    } catch (err) {
-        console.error("Error:", err);
-    }
-
-}
-
 async function recuperaTaulersApi(partida) {
     torn = partida.torn;
 
